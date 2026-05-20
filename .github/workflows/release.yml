@@ -31,27 +31,47 @@ jobs:
       - name: Install build tooling
         run: python -m pip install --upgrade build twine
 
-      - name: Build sdist + wheel
+      - name: Build mllang-protocol sdist + wheel
         run: python -m build parser/
 
-      - name: Verify metadata
+      - name: Build agent-shim sdist + wheel
+        run: python -m build shim/
+
+      - name: Verify mllang-protocol metadata
         run: twine check parser/dist/*
 
-      - name: Run conformance suite as final gate
+      - name: Verify agent-shim metadata
+        run: twine check shim/dist/*
+
+      - name: Install both packages locally
         run: |
           pip install -e parser/
-          python conformance/run_conformance.py
+          pip install -e shim/
 
-      - name: Upload to PyPI
+      - name: Run mllang conformance suite as final gate
+        run: python conformance/run_conformance.py
+
+      - name: Run agent-shim end-to-end test
+        run: python conformance/test_shim.py
+
+      - name: Upload mllang-protocol to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           if [ -z "$TWINE_PASSWORD" ]; then
-            echo "PYPI_API_TOKEN secret not set — skipping upload."
-            echo "Add a PyPI API token at:"
-            echo "  Settings -> Secrets and variables -> Actions -> New repository secret"
-            echo "  Name: PYPI_API_TOKEN"
+            echo "PYPI_API_TOKEN secret not set — skipping mllang-protocol upload."
             exit 0
           fi
-          twine upload parser/dist/*
+          twine upload --skip-existing parser/dist/*
+
+      - name: Upload agent-shim to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -z "$TWINE_PASSWORD" ]; then
+            echo "PYPI_API_TOKEN secret not set — skipping agent-shim upload."
+            exit 0
+          fi
+          twine upload --skip-existing shim/dist/*

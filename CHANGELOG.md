@@ -4,6 +4,31 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.5] — 2026-05-20
+
+### Added — sister package `agent-shim` v0.1.0
+- New PyPI distribution `agent-shim` (separate from `mllang-protocol`). Local-first JSONL observability for LLM-agent loops. Works with any LLM; optional MLLANG awareness pulls structured signals from packets in responses.
+- Source: `shim/agent_shim/` — `Recorder`, `record()` context manager, `instrument()` decorator, `observe()` one-shot helper, `agent-shim-report` CLI.
+- Standalone use (no MLLANG): records model / tokens_in / tokens_out / latency_s / cost_estimate / user tags. Aggregated report shows p50 / p99 latency, model distribution, total $$ spent.
+- With MLLANG (`pip install 'agent-shim[mllang]'`): auto-extracts `halt`, `confidence`, `agent_code`, `slots_present`, and computes `tokens_saved_est` vs JSON-RPC envelope baseline. Aggregated report adds `mean token reduction`, `halt distribution`, `mean P:`, `agent distribution`.
+- Zero hard runtime deps. Optional `[tiktoken]` extra for exact OpenAI-style token counts.
+- End-to-end test (`conformance/test_shim.py`) — 21 assertions covering standalone mode, MLLANG mode, fenced-markdown extraction, mixed prose+packet, summary report. CI `shim-e2e` job runs on every push.
+- Cross-link extras: `pip install 'mllang-protocol[shim]'` pulls agent-shim too.
+
+### Added — `mllang-protocol`
+- `[shim]` extra in `parser/pyproject.toml` so existing MLLANG users can opt into observability with one command.
+- README "Sister package — agent-shim" section with killer-demo CLI output.
+- `docs/shim.md` explains the two-product story (alone or together) and links to `shim/README.md`.
+
+### Release pipeline
+- Tag-triggered release workflow now builds + uploads BOTH packages in one shot. Each `twine upload --skip-existing` step is independent, so a one-package republish is safe.
+
+### Note on layering
+- Core MLLANG library stays pure stdlib. Observability lives in the sister package on purpose — `mllang-protocol` users who don't want metrics pay nothing.
+- `agent-shim` users who never touch MLLANG pay nothing for it either. The two products compose; neither requires the other.
+
+---
+
 ## [0.1.4] — 2026-05-20
 
 ### Fixed

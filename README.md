@@ -176,6 +176,7 @@ pip install -e parser/
 - [Markdown-embedded usage](docs/markdown-embedded.md)
 - [Bootstrap — 3-layer setup](docs/bootstrap.md)
 - [MCP server](docs/mcp.md)
+- [agent-shim — observability](docs/shim.md)
 - [Telemetry & privacy](docs/telemetry.md)
 - [FAQ](docs/faq.md)
 - [Conformance tests](conformance/)
@@ -187,6 +188,34 @@ pip install -e parser/
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Quarterly RFC review windows. Multi-vendor test required for any spec change.
+
+---
+
+## Sister package — `agent-shim`
+
+Same repo, separate PyPI listing. Local-first observability for LLM-agent loops — token / latency / cost / outcome distribution in a JSONL log, aggregated by a small CLI. Works with **any** model. Optional MLLANG awareness for 5x more signal.
+
+```bash
+pip install agent-shim               # standalone (any LLM)
+pip install 'agent-shim[mllang]'     # auto-extract halt / confidence / agent code from MLLANG responses
+pip install 'mllang-protocol[shim]'  # same as above, reverse install order
+```
+
+Killer demo:
+
+```text
+$ agent-shim-report calls.jsonl
+200 packets logged
+mean token reduction:  56.8% vs JSON-RPC equivalent  (200/200 packets MLLANG-tagged)
+estimated tokens saved: 9,536
+p50 latency: 4.32s    p99: 7.92s
+mean P: 0.81
+halt distribution:     test=pass 62% | <=> 18% | accept 9% | escalate@H 7% | risk!high 4%
+model distribution:    gpt-5.5-thinking 42% | claude-opus 32% | gemini-pro 13% | gemma-26b 10% | deepseek-v3 4%
+agent distribution:    @G 23% | @X 21% | @K 20% | @M 19% | @C 17%
+```
+
+Full guide: [`docs/shim.md`](docs/shim.md) and [`shim/README.md`](shim/README.md).
 
 ---
 

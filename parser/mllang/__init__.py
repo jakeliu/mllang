@@ -19,7 +19,7 @@ from .operators import OPERATORS
 from .sanitize import sanitize, sanitize_to_json, VALID_LEVELS as TELEMETRY_LEVELS
 from .embed import embed_in_markdown, extract_summary_and_packet
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 __all__ = [
     "Packet",

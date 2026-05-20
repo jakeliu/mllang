@@ -3,15 +3,15 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mllang-protocol"
-version = "0.1.5"
-description = "MLLANG v0.1 reference parser — compact text-surface protocol for AI-agent state, lives inside markdown fenced blocks"
+name = "agent-shim"
+version = "0.1.0"
+description = "Local-first observability for LLM-agent loops. JSONL log, no SaaS, optional MLLANG awareness."
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
 authors = [
     {name = "Jake Liu"}
 ]
-keywords = ["mllang", "ai", "agents", "multi-agent", "llm", "protocol"]
+keywords = ["llm", "agents", "observability", "telemetry", "instrumentation", "mllang"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -22,21 +22,22 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Monitoring",
 ]
 dependencies = []
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.0"]
-shim = ["agent-shim>=0.1.0"]
+mllang = ["mllang-protocol>=0.1.5"]
+tiktoken = ["tiktoken>=0.5"]
 
 [project.scripts]
-mllang-mcp-server = "mllang.mcp_server:main"
+agent-shim-report = "agent_shim.report:main"
 
 [project.urls]
 Homepage = "https://github.com/jakeliu/mllang"
 Repository = "https://github.com/jakeliu/mllang"
-Documentation = "https://mllang.com"
+Documentation = "https://github.com/jakeliu/mllang/blob/main/docs/shim.md"
 Issues = "https://github.com/jakeliu/mllang/issues"
 
 [tool.setuptools.packages.find]
-include = ["mllang*"]
+include = ["agent_shim*"]
