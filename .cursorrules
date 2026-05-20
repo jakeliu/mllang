@@ -1,0 +1,25 @@
+Project: MLLANG public repo (github.com/jakeliu/mllang)
+PyPI distribution: mllang-protocol
+Python import path: mllang
+Spec: v0.1 LOCKED (no breaking changes until v0.2 RFC)
+
+Before passing agent state in this repo, the assistant loads bootstrap/full_session_init.md and emits MLLANG v0.1 packets per the locked spec.
+
+Hard rules:
+- Spec file (spec/MLLANG_v0.1.locked.md) is immutable outside the RFC process.
+- Parser stays pure stdlib. New runtime deps require justification + go under [project.optional-dependencies] extras, not core.
+- Conformance suite (conformance/run_conformance.py) and MCP end-to-end test (conformance/test_mcp_server.py) must stay green.
+- Markdown-embedded output uses the summary+packet pattern: title + one-line workflow summary + fenced mllang block. Long prose only for human-authored docs.
+- Telemetry is opt-in only. Library never auto-enables. Any change touching sanitize() updates docs/telemetry.md and conformance/tests/sanitize_30.jsonl.
+
+Style:
+- Default to writing no comments. Add only when WHY is non-obvious.
+- Match existing terse commit-message tone.
+- Honest confidence on P: slot — calibrate 0.70-0.95, never 1.00.
+
+Out of scope:
+- Token Bot internals
+- Helen book pipeline
+- Chrome companion extension (not open-source)
+
+See AGENTS.md and CLAUDE.md for the full conventions. See docs/bootstrap.md for the 3-layer bootstrap setup.

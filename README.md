@@ -174,6 +174,7 @@ pip install -e parser/
 - [Specification (v0.1 locked)](spec/MLLANG_v0.1.locked.md)
 - [Quickstart](docs/quickstart.md)
 - [Markdown-embedded usage](docs/markdown-embedded.md)
+- [Bootstrap — 3-layer setup](docs/bootstrap.md)
 - [MCP server](docs/mcp.md)
 - [Telemetry & privacy](docs/telemetry.md)
 - [FAQ](docs/faq.md)
