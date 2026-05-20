@@ -9,17 +9,16 @@ on:
       ref:
         description: 'git ref to build from (tag or branch)'
         required: true
-        default: 'v0.1.1'
+        default: 'v0.1.5'
 
 permissions:
   contents: read
 
 jobs:
-  build-and-publish:
+  build-and-test:
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/mllang
+    outputs:
+      built: ${{ steps.summary.outputs.built }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +28,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install build tooling
-        run: python -m pip install --upgrade build twine
+        run: python -m pip install --upgrade build
 
       - name: Build mllang-protocol sdist + wheel
         run: python -m build parser/
@@ -37,16 +36,10 @@ jobs:
       - name: Build agent-shim sdist + wheel
         run: python -m build shim/
 
-      - name: Verify mllang-protocol metadata
-        run: twine check parser/dist/*
-
-      - name: Verify agent-shim metadata
-        run: twine check shim/dist/*
-
       - name: Install both packages locally
         run: |
           pip install -e parser/
-          pip install -e shim/
+          pip install -e 'shim/[mllang]'
 
       - name: Run mllang conformance suite as final gate
         run: python conformance/run_conformance.py
@@ -54,24 +47,55 @@ jobs:
       - name: Run agent-shim end-to-end test
         run: python conformance/test_shim.py
 
-      - name: Upload mllang-protocol to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          if [ -z "$TWINE_PASSWORD" ]; then
-            echo "PYPI_API_TOKEN secret not set — skipping mllang-protocol upload."
-            exit 0
-          fi
-          twine upload --skip-existing parser/dist/*
+      - name: Upload mllang-protocol dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mllang-protocol-dist
+          path: parser/dist/
 
-      - name: Upload agent-shim to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          if [ -z "$TWINE_PASSWORD" ]; then
-            echo "PYPI_API_TOKEN secret not set — skipping agent-shim upload."
-            exit 0
-          fi
-          twine upload --skip-existing shim/dist/*
+      - name: Upload agent-shim dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-shim-dist
+          path: shim/dist/
+
+      - id: summary
+        run: echo "built=true" >> "$GITHUB_OUTPUT"
+
+  publish-mllang-protocol:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mllang-protocol
+    permissions:
+      id-token: write     # OIDC trusted-publishing
+    steps:
+      - name: Download mllang-protocol dist
+        uses: actions/download-artifact@v4
+        with:
+          name: mllang-protocol-dist
+          path: dist/
+      - name: Publish to PyPI via Trusted Publisher
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+  publish-agent-shim:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/agent-shim
+    permissions:
+      id-token: write     # OIDC trusted-publishing
+    steps:
+      - name: Download agent-shim dist
+        uses: actions/download-artifact@v4
+        with:
+          name: agent-shim-dist
+          path: dist/
+      - name: Publish to PyPI via Trusted Publisher
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
