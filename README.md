@@ -219,6 +219,31 @@ Full guide: [`docs/shim.md`](docs/shim.md) and [`shim/README.md`](shim/README.md
 
 ---
 
+## Claude Code skill — `/mllang`
+
+One-keystroke MLLANG inside Claude Code (Anthropic's official CLI). The skill loads the bootstrap, instruments sub-agent (`Agent` tool) calls via a `PostToolUse` hook, and lets you check live token-savings at any time.
+
+Install:
+
+```bash
+curl -sL https://raw.githubusercontent.com/jakeliu/mllang/main/claude-code-skill/install.sh | bash
+pip install 'shim-engine[mllang]'    # optional, enables /mllang report
+```
+
+Then in Claude Code:
+
+```
+/mllang             # load bootstrap, ratify session
+/mllang load critic # adopt the critic role's conventions
+/mllang report      # token-savings report from sub-agent calls this session
+/mllang status      # one-liner summary
+/mllang spec        # 5-line MLLANG v0.1 summary
+```
+
+The sub-agent log is privacy-redacted (slot SHAPES only, no slot values) and lives at `~/.claude/mllang-shim/session.jsonl`. Full guide: [`claude-code-skill/README.md`](claude-code-skill/README.md).
+
+---
+
 ## MCP server (Claude Desktop / Cline / Zed)
 
 ```bash
