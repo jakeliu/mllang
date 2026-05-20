@@ -1,0 +1,11 @@
+V:0.1.r1; I:debug-auth-401-001;
+G:{pattern=sequential, task=diagnose_and_fix, scope=auth_module};
+S:{symptom="login returns 401 after JWT migration", env=staging, repro="POST /login with valid creds"};
+D:[isolate_repro, check_token_expiry_logic, check_clock_skew];
+E:["server.log:line_4523", "auth_middleware.py:line_67"];
+U:[?token_clock_skew_acceptable_threshold];
+R:[downtime_during_fix, regression_in_session_compat_layer];
+N:@K -> implement_fix;
+H:test=pass;
+P:0.82;
+EN: Diagnose JWT 401 on staging login, fix middleware, verify with test.

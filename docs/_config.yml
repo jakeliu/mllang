@@ -1,0 +1,14 @@
+title: MLLANG
+description: Compact text-surface protocol for AI-agent state. Lives inside markdown fenced blocks.
+theme: jekyll-theme-cayman
+url: https://mllang.com
+baseurl: ""
+markdown: kramdown
+plugins:
+  - jekyll-relative-links
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

@@ -1,0 +1,50 @@
+{"input": "V:0.1.r1; I:t1; G:{task=test}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;", "expected": {"version": "0.1.r1", "thread_id": "t1", "next_agent_code": "@K", "halt": "<=>", "confidence": 0.85}}
+{"input": "V:0.1.r2; I:debug-001; G:{task=diagnose}; S:{env=prod}; N:@C -> verify; H:test=pass; P:0.71;", "expected": {"version": "0.1.r2", "thread_id": "debug-001", "next_agent_code": "@C", "halt": "test=pass", "confidence": 0.71}}
+{"input": "V:0.1.r1; G:{task=lock}; S:{ready=true}; N:@H -> review; H:accept; P:1.00;", "expected": {"version": "0.1.r1", "next_agent_code": "@H", "halt": "accept", "confidence": 1.0}}
+{"input": "V:0.1.r3; I:thread-x; G:^r2; S:{reviewed=@G}; D:[accept-all]; N:@C -> lock; H:<=>; P:0.95;", "expected": {"version": "0.1.r3", "thread_id": "thread-x", "halt": "<=>", "confidence": 0.95}}
+{"input": "V:0.1.r1; I:rfc-42; G:{pattern=sequential}; S:{rounds=0}; N:@X -> propose; H:after-3-rounds | <=>; P:0.80;", "expected": {"version": "0.1.r1", "halt": "after-3-rounds | <=>", "confidence": 0.8}}
+{"input": "V:0.1.r1; G:{task=refactor}; S:{lines=347}; D:[backup_first, test_each_step]; R:[regression, downtime]; N:@K -> implement; H:test=pass; P:0.82;", "expected": {"version": "0.1.r1", "halt": "test=pass", "confidence": 0.82}}
+{"input": "V:0.1.r1; G:{task=summarize}; S:{docs=12}; U:[?source_priority]; N:@K -> summarize; H:test=pass; P:0.78;", "expected": {"unknowns": ["?source_priority"], "next_agent_code": "@K"}}
+{"input": "V:0.1.r1; I:emergency-1; G:{task=incident}; S:{severity=high}; N:@H -> escalate; H:escalate@H; P:0.95;", "expected": {"halt": "escalate@H", "next_agent_code": "@H"}}
+{"input": "V:0.1.r1; G:{task=tool_call}; S:{ready=1}; Y:[$bash(\"ls /tmp\")]; N:@K -> exec; H:test=pass; P:0.85;", "expected": {"tool_calls": ["$bash(\"ls /tmp\")"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; B:{tokens=5000, time=300}; N:@K -> c; H:<=>; P:0.85;", "expected": {"budget": {"tokens": "5000", "time": "300"}}}
+{"input": "V:0.1.r1; I:multi-line; G:{task=test}; S:{x=1};\nN:@K -> classify; H:<=>; P:0.85;", "expected": {"version": "0.1.r1", "next_agent_code": "@K"}}
+{"input": "V:0.1.r1; G:{task=t, mode=fast}; S:{x=1, y=2}; D:[a, b, c]; N:@G -> review; H:<=>; P:0.90;", "expected": {"goal": {"task": "t", "mode": "fast"}, "state": {"x": "1", "y": "2"}, "decisions": ["a", "b", "c"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; E:[\"file1.py\", \"file2.py\"]; N:@K -> read; H:<=>; P:0.85;", "expected": {"evidence": ["\"file1.py\"", "\"file2.py\""]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; T:{check=pass}; N:@K -> next; H:test=pass; P:0.85;", "expected": {"test": {"check": "pass"}, "halt": "test=pass"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; F:[\"a.py\", \"b.py\"]; N:@K -> edit; H:<=>; P:0.85;", "expected": {"files": ["\"a.py\"", "\"b.py\""]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; A:[user_authed, db_reachable]; N:@K -> go; H:<=>; P:0.85;", "expected": {"assumptions": ["user_authed", "db_reachable"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:risk!high; P:0.40;", "expected": {"halt": "risk!high", "confidence": 0.4}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:repair; P:0.65;", "expected": {"halt": "repair"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:regen; P:0.45;", "expected": {"halt": "regen"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@? -> any; H:after-5-rounds | <=>; P:0.80;", "expected": {"next_agent_code": "@?", "halt": "after-5-rounds | <=>"}}
+{"input": "V:0.1.r1; I:thread-with-dashes-and-numbers-123; G:{task=test}; S:{x=1}; N:@K -> c; H:<=>; P:0.85;", "expected": {"thread_id": "thread-with-dashes-and-numbers-123"}}
+{"input": "V:0.1.r1; G:{task=\"quoted task with spaces\"}; S:{x=1}; N:@K -> c; H:<=>; P:0.85;", "expected": {"goal": {"task": "\"quoted task with spaces\""}}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; D:[item with spaces, another item]; N:@K -> c; H:<=>; P:0.85;", "expected": {"decisions": ["item with spaces", "another item"]}}
+{"input": "V:0.1.r1; G:{nested={a=1, b=2}}; S:{x=1}; N:@K -> c; H:<=>; P:0.85;", "expected": {"version": "0.1.r1"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@C -> review; H:test=fail; P:0.30;", "expected": {"halt": "test=fail", "next_agent_code": "@C"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@G -> review; H:<=>; P:0.95;\nEN: This is the english shadow.", "expected": {"en_shadow": "This is the english shadow.", "halt": "<=>"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@M -> classify; H:test=pass; P:0.95;\nEN: Gemma local classification test.", "expected": {"en_shadow": "Gemma local classification test.", "next_agent_code": "@M"}}
+{"input": "V:0.1.r10; I:long-thread; G:^r9; S:{rounds_so_far=9}; N:@C -> finalize; H:<=>; P:0.92;", "expected": {"version": "0.1.r10", "thread_id": "long-thread"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; D:[]; U:[]; R:[]; N:@K -> c; H:<=>; P:0.85;", "expected": {"decisions": [], "unknowns": [], "risks": []}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; D:[a]; U:[?q1, ?q2]; R:[r1, r2, r3]; N:@K -> c; H:<=>; P:0.85;", "expected": {"unknowns": ["?q1", "?q2"], "risks": ["r1", "r2", "r3"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@X -> propose; H:propose; P:0.85;", "expected": {"next_agent_code": "@X", "next_agent_verb": "propose"}}
+{"input": "V:0.1.r1; G:{task=t, pattern=mixture}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;", "expected": {"goal": {"task": "t", "pattern": "mixture"}}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;A:[future_proof];", "expected": {"assumptions": ["future_proof"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>;", "expected": {"confidence": 0.0, "halt": "<=>"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.50;", "expected": {"confidence": 0.5}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.00;", "expected": {"confidence": 0.0}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:1.00;", "expected": {"confidence": 1.0}}
+{"input": "V:0.2.r5; I:future; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;", "expected": {"version": "0.2.r5"}}
+{"input": "V:1.0.r1; I:major-bump; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;", "expected": {"version": "1.0.r1"}}
+{"input": "V:0.1.r1; G:{task=t, deadline=2026-06-15}; S:{x=1}; N:@K -> c; H:<=>; P:0.85;", "expected": {"goal": {"task": "t", "deadline": "2026-06-15"}}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; D:[step1, step2, step3, step4]; N:@K -> c; H:<=>; P:0.85;", "expected": {"decisions": ["step1", "step2", "step3", "step4"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; Y:[$curl(\"http://api.test\"), $bash(\"ls\")]; N:@K -> c; H:<=>; P:0.85;", "expected": {"tool_calls": ["$curl(\"http://api.test\")", "$bash(\"ls\")"]}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; B:{tokens=10000}; N:@K -> c; H:<=>; P:0.85;", "expected": {"budget": {"tokens": "10000"}}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; B:{money=2.50}; N:@K -> c; H:<=>; P:0.85;", "expected": {"budget": {"money": "2.50"}}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> implement; H:accept | repair; P:0.79;", "expected": {"halt": "accept | repair"}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;\nEN: ", "expected": {"en_shadow": ""}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;\nEN: Short.", "expected": {"en_shadow": "Short."}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1, env=prod, version=2}; N:@K -> c; H:<=>; P:0.85;", "expected": {"state": {"x": "1", "env": "prod", "version": "2"}}}
+{"input": "V:0.1.r1; G:{task=t}; S:{x=1}; D:[a, b, c, d, e, f]; N:@K -> c; H:<=>; P:0.85;", "expected": {"decisions": ["a", "b", "c", "d", "e", "f"]}}
+{"input": "V:0.1.r1; G:{task=final_test}; S:{passed=49}; N:@H -> review; H:<=>; P:0.95;\nEN: Final conformance test passes.", "expected": {"goal": {"task": "final_test"}, "en_shadow": "Final conformance test passes."}}

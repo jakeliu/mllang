@@ -1,0 +1,11 @@
+V:0.1.r1; I:pr-review-1247;
+G:{pattern=sequential, task=review_pr, pr_id=1247, repo=acme/api-server};
+S:{lines_changed=347, files_changed=12, lang=go, branch=feature/rate-limit};
+D:[check_error_handling, check_test_coverage, check_naming_consistency, check_api_compat];
+E:["pr-1247-diff.patch", "ci-run-8842.log"];
+U:[?breaking_api_change_introduced];
+R:[performance_regression_on_hot_path, untested_error_paths, missing_metrics];
+N:@C -> verify_review_findings;
+H:accept | repair;
+P:0.79;
+EN: Review PR 1247 (rate limit feature, 347 lines, 12 files) — verify error handling, tests, naming, API compat.

@@ -1,0 +1,10 @@
+V:0.1.r1; I:classify-feedback-batch-19;
+G:{pattern=mixture, task=classify_user_feedback, batch_size=50, source=app_store_reviews};
+S:{batch=feedback_19, sentiment_dims=[positive,negative,neutral], topic_dims=[bug,feature,ux,perf]};
+D:[plan{@C=critic_proposes_dimensions, @K=implementer_runs_classify, @X=synthesizer_aggregates_disagreements}];
+U:[?low_inter_rater_agreement_threshold];
+R:[overfitting_to_recent_batch, missed_emergent_topics];
+N:@C -> propose_classification_dimensions;
+H:after-3-rounds | <=>;
+P:0.85;
+EN: Three-agent mixture classification of 50 app store reviews — Critic→Implementer→Synthesizer.

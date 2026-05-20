@@ -1,0 +1,15 @@
+{"halt": "<=>", "valid": true}
+{"halt": "accept", "valid": true}
+{"halt": "repair", "valid": true}
+{"halt": "regen", "valid": true}
+{"halt": "escalate@H", "valid": true}
+{"halt": "test=pass", "valid": true}
+{"halt": "test=fail", "valid": true}
+{"halt": "risk!high", "valid": true}
+{"halt": "after-3-rounds", "valid": true}
+{"halt": "after-5-rounds", "valid": true}
+{"halt": "after-N-rounds", "valid": true}
+{"halt": "after-3-rounds | <=>", "valid": true}
+{"halt": "accept | repair", "valid": true}
+{"halt": "invalid_halt", "valid": false}
+{"halt": "", "valid": false}
