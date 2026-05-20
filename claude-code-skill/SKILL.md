@@ -8,6 +8,10 @@ hooks:
       hooks:
         - type: command
           command: "python3 ${CLAUDE_SKILL_DIR}/scripts/hook_postagent.py"
+  UserPromptSubmit:
+    - hooks:
+        - type: command
+          command: "python3 ${CLAUDE_SKILL_DIR}/scripts/hook_preprompt.py"
 ---
 
 # MLLANG skill

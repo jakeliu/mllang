@@ -4,6 +4,19 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.9] — 2026-05-20
+
+### Added — auto-surface unread mailbox messages
+- New Claude Code skill hook `UserPromptSubmit` at `claude-code-skill/scripts/hook_preprompt.py`. Before every user prompt, polls the session's inbox (`MLLANG_MY_BOX`, default `claude`) and, if any messages are unread, injects a system reminder listing the top 3 (from / subject / msg_id) and the count. The model surfaces it to the user immediately.
+- No daemon, no MCP push required. Deterministic polling at prompt time. Same script works for any client that supports `UserPromptSubmit`-equivalent hooks (Codex once their schema is fixture-backed).
+- Fails soft: missing mailbox dir, malformed JSON, permission errors all degrade to clean pass-through. Never blocks the user prompt.
+
+### Note — native MCP notifications path documented and deferred
+- Codex CLI research (`ai_language/mllang_launch/CODEX_MCP_NOTIFICATIONS_RESEARCH_RESULTS.md`) confirmed: Codex's compiled MCP runtime accepts server-pushed `notifications/message` and `notifications/resources/updated`, but the user-visible UX path drops them silently. Native push is not a reliable surfacing channel for Codex today.
+- Decision: prompt-time hook polling is the primary surfacing mechanism. Native push is documented as a future option pending Codex UX changes.
+
+---
+
 ## [0.1.8] — 2026-05-20
 
 ### Added — cross-CLI mailbox (the killer feature for multi-agent loops)
