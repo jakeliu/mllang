@@ -1,9 +1,9 @@
-"""Optional MLLANG awareness for agent-shim.
+"""Optional MLLANG awareness for shim-engine.
 
-When `mllang-protocol` is installed (via `pip install 'agent-shim[mllang]'`),
-agent-shim extracts structured signals from MLLANG packets present in LLM
+When `mllang-protocol` is installed (via `pip install 'shim-engine[mllang]'`),
+shim-engine extracts structured signals from MLLANG packets present in LLM
 responses. When MLLANG is not installed, this module degrades to no-op —
-agent-shim still works fine as a generic LLM observability layer.
+shim-engine still works fine as a generic LLM observability layer.
 """
 
 from __future__ import annotations

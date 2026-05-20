@@ -1,19 +1,19 @@
-# agent-shim
+# shim-engine
 
 Local-first observability for LLM-agent loops. Wrap any LLM call, get a JSONL log of token counts, latency, cost, and outcome. Aggregate with the bundled CLI. No SaaS, no hosted UI, no telemetry sent anywhere.
 
 Optional MLLANG awareness for 5x more signal — install with `[mllang]` extra.
 
 ```bash
-pip install agent-shim
+pip install shim-engine
 # or, with MLLANG signal extraction:
-pip install 'agent-shim[mllang]'
+pip install 'shim-engine[mllang]'
 ```
 
 ## 60-second example
 
 ```python
-from agent_shim import record
+from shim_engine import record
 
 with record("calls.jsonl", parser="mllang") as r:
     response = llm_client.chat(prompt)
@@ -30,7 +30,7 @@ with record("calls.jsonl", parser="mllang") as r:
 Then:
 
 ```bash
-$ agent-shim-report calls.jsonl
+$ shim-engine-report calls.jsonl
 200 packets logged (calls.jsonl)
 mean token reduction:  56.8% vs JSON-RPC equivalent  (200/200 packets MLLANG-tagged)
 estimated tokens saved: 9,536
@@ -46,11 +46,11 @@ agent distribution:    @G 23% | @X 21% | @K 20% | @M 19% | @C 17%
 
 ## Use without MLLANG
 
-`agent-shim` works just fine on plain LLM responses. Drop the `parser="mllang"` and you still get:
+`shim-engine` works just fine on plain LLM responses. Drop the `parser="mllang"` and you still get:
 
 - Token in/out counts
 - Latency
-- Cost estimate ($5/M tokens default; override via `cost_per_M=` or `AGENT_SHIM_COST_PER_M` env)
+- Cost estimate ($5/M tokens default; override via `cost_per_M=` or `SHIM_ENGINE_COST_PER_M` env)
 - Model distribution
 - p50 / p99 latency
 - Arbitrary user tags (`call_type`, `thread_id`, etc.) for slicing
@@ -59,7 +59,7 @@ The only thing you lose by skipping MLLANG: the slot-structured signals (`halt` 
 
 ## Use with MLLANG
 
-When `parser="mllang"` is set and `agent-shim[mllang]` (or `mllang-protocol`) is installed, agent-shim looks at each response for an MLLANG packet (either as a bare line or inside a ```mllang fenced block). When found, it extracts:
+When `parser="mllang"` is set and `shim-engine[mllang]` (or `mllang-protocol`) is installed, shim-engine looks at each response for an MLLANG packet (either as a bare line or inside a ```mllang fenced block). When found, it extracts:
 
 | Field | Meaning |
 |-------|---------|
@@ -81,7 +81,7 @@ with record(path, parser="none") as r:
     r.observe(response="...", model="...", tokens_in=N, tokens_out=N, latency_s=N)
 
 # Decorator — preferred for already-wrapped functions:
-from agent_shim import instrument
+from shim_engine import instrument
 
 @instrument(path="calls.jsonl", parser="mllang")
 def critique(prompt):
@@ -90,7 +90,7 @@ def critique(prompt):
             "tokens_in": out.usage.input, "tokens_out": out.usage.output}
 
 # One-shot — preferred for ad-hoc:
-from agent_shim import observe
+from shim_engine import observe
 observe(response="...", model="...", tokens_in=N, tokens_out=N, latency_s=N,
         parser="none", path="calls.jsonl")
 ```
@@ -99,18 +99,18 @@ observe(response="...", model="...", tokens_in=N, tokens_out=N, latency_s=N,
 
 | Variable | Default | What |
 |----------|---------|------|
-| `AGENT_SHIM_LOG` | `agent_shim.jsonl` | Default log path when no path is passed |
-| `AGENT_SHIM_COST_PER_M` | `5.0` | USD per 1M tokens for cost estimate |
+| `SHIM_ENGINE_LOG` | `shim_engine.jsonl` | Default log path when no path is passed |
+| `SHIM_ENGINE_COST_PER_M` | `5.0` | USD per 1M tokens for cost estimate |
 
 ## Privacy posture
 
-- agent-shim does not phone home. No HTTP egress. Logs are local JSONL.
+- shim-engine does not phone home. No HTTP egress. Logs are local JSONL.
 - When used with `parser="mllang"`, the captured signals are slot SHAPES (halt, confidence, agent code) — NOT slot values. The same redaction posture as `mllang.sanitize()` (off-by-default values, defense-in-depth leak detection) applies if you choose to ship the log onward.
 - Free-form `tags` you pass are stored verbatim. Don't put secrets in tags.
 
 ## Why local-first
 
-Hosted observability (LangSmith / Helicone / Langfuse) is great when you trust the vendor with your prompts. For everything else — proprietary agent loops, security-sensitive workflows, offline experiments, students on free tiers — a 250-LOC stdlib library that writes JSONL is the simpler answer. agent-shim ships zero hard runtime dependencies. tiktoken is an optional extra for exact OpenAI-style token counts; without it the library uses a `len(text) // 4` heuristic.
+Hosted observability (LangSmith / Helicone / Langfuse) is great when you trust the vendor with your prompts. For everything else — proprietary agent loops, security-sensitive workflows, offline experiments, students on free tiers — a 250-LOC stdlib library that writes JSONL is the simpler answer. shim-engine ships zero hard runtime dependencies. tiktoken is an optional extra for exact OpenAI-style token counts; without it the library uses a `len(text) // 4` heuristic.
 
 ## License
 

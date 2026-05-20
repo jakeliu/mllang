@@ -4,20 +4,32 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
-## [0.1.5] — 2026-05-20
+## [0.1.6] — 2026-05-20
 
-### Added — sister package `agent-shim` v0.1.0
-- New PyPI distribution `agent-shim` (separate from `mllang-protocol`). Local-first JSONL observability for LLM-agent loops. Works with any LLM; optional MLLANG awareness pulls structured signals from packets in responses.
-- Source: `shim/agent_shim/` — `Recorder`, `record()` context manager, `instrument()` decorator, `observe()` one-shot helper, `agent-shim-report` CLI.
+### Renamed before first publish
+- Sister package PyPI name changed from `agent-shim` to `shim-engine`. `agent-shim` was blocked by PyPI anti-typosquatting (too similar to existing `agentshim` and `agentsim`). Python import path is now `shim_engine`. CLI is `shim-engine-report`. Env vars are `SHIM_ENGINE_LOG` and `SHIM_ENGINE_COST_PER_M`. The `agent-shim` name was never published — the v0.1.5 tag built the artifact but PyPI upload failed before any user could install it.
+- `mllang-protocol` bumped to fix the `[shim]` optional dependency reference (`agent-shim>=0.1.0` → `shim-engine>=0.1.0`). v0.1.5's `[shim]` extra is broken; install v0.1.6+ to use the extras path.
+
+### Release pipeline
+- Switched from twine + project-scoped `PYPI_API_TOKEN` to PyPI **Trusted Publishers** (OIDC) via `pypa/gh-action-pypi-publish@release/v1`. No stored tokens, no rotation.
+- Workflow split into three jobs: `build-and-test` (builds + final gate), `publish-mllang-protocol`, `publish-shim-engine`. Each publish job uses `id-token: write` and the `pypi` environment.
+
+---
+
+## [0.1.5] — 2026-05-20 — agent-shim build (never published, see 0.1.6)
+
+### Added — sister package `shim-engine` v0.1.0
+- New PyPI distribution `shim-engine` (separate from `mllang-protocol`). Local-first JSONL observability for LLM-agent loops. Works with any LLM; optional MLLANG awareness pulls structured signals from packets in responses.
+- Source: `shim/shim_engine/` — `Recorder`, `record()` context manager, `instrument()` decorator, `observe()` one-shot helper, `shim-engine-report` CLI.
 - Standalone use (no MLLANG): records model / tokens_in / tokens_out / latency_s / cost_estimate / user tags. Aggregated report shows p50 / p99 latency, model distribution, total $$ spent.
-- With MLLANG (`pip install 'agent-shim[mllang]'`): auto-extracts `halt`, `confidence`, `agent_code`, `slots_present`, and computes `tokens_saved_est` vs JSON-RPC envelope baseline. Aggregated report adds `mean token reduction`, `halt distribution`, `mean P:`, `agent distribution`.
+- With MLLANG (`pip install 'shim-engine[mllang]'`): auto-extracts `halt`, `confidence`, `agent_code`, `slots_present`, and computes `tokens_saved_est` vs JSON-RPC envelope baseline. Aggregated report adds `mean token reduction`, `halt distribution`, `mean P:`, `agent distribution`.
 - Zero hard runtime deps. Optional `[tiktoken]` extra for exact OpenAI-style token counts.
 - End-to-end test (`conformance/test_shim.py`) — 21 assertions covering standalone mode, MLLANG mode, fenced-markdown extraction, mixed prose+packet, summary report. CI `shim-e2e` job runs on every push.
-- Cross-link extras: `pip install 'mllang-protocol[shim]'` pulls agent-shim too.
+- Cross-link extras: `pip install 'mllang-protocol[shim]'` pulls shim-engine too.
 
 ### Added — `mllang-protocol`
 - `[shim]` extra in `parser/pyproject.toml` so existing MLLANG users can opt into observability with one command.
-- README "Sister package — agent-shim" section with killer-demo CLI output.
+- README "Sister package — shim-engine" section with killer-demo CLI output.
 - `docs/shim.md` explains the two-product story (alone or together) and links to `shim/README.md`.
 
 ### Release pipeline
@@ -25,7 +37,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MA
 
 ### Note on layering
 - Core MLLANG library stays pure stdlib. Observability lives in the sister package on purpose — `mllang-protocol` users who don't want metrics pay nothing.
-- `agent-shim` users who never touch MLLANG pay nothing for it either. The two products compose; neither requires the other.
+- `shim-engine` users who never touch MLLANG pay nothing for it either. The two products compose; neither requires the other.
 
 ---
 

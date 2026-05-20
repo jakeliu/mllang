@@ -33,7 +33,7 @@ jobs:
       - name: Build mllang-protocol sdist + wheel
         run: python -m build parser/
 
-      - name: Build agent-shim sdist + wheel
+      - name: Build shim-engine sdist + wheel
         run: python -m build shim/
 
       - name: Install both packages locally
@@ -44,7 +44,7 @@ jobs:
       - name: Run mllang conformance suite as final gate
         run: python conformance/run_conformance.py
 
-      - name: Run agent-shim end-to-end test
+      - name: Run shim-engine end-to-end test
         run: python conformance/test_shim.py
 
       - name: Upload mllang-protocol dist artifact
@@ -53,10 +53,10 @@ jobs:
           name: mllang-protocol-dist
           path: parser/dist/
 
-      - name: Upload agent-shim dist artifact
+      - name: Upload shim-engine dist artifact
         uses: actions/upload-artifact@v4
         with:
-          name: agent-shim-dist
+          name: shim-engine-dist
           path: shim/dist/
 
       - id: summary
@@ -81,19 +81,19 @@ jobs:
         with:
           skip-existing: true
 
-  publish-agent-shim:
+  publish-shim-engine:
     needs: build-and-test
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/agent-shim
+      url: https://pypi.org/p/shim-engine
     permissions:
       id-token: write     # OIDC trusted-publishing
     steps:
-      - name: Download agent-shim dist
+      - name: Download shim-engine dist
         uses: actions/download-artifact@v4
         with:
-          name: agent-shim-dist
+          name: shim-engine-dist
           path: dist/
       - name: Publish to PyPI via Trusted Publisher
         uses: pypa/gh-action-pypi-publish@release/v1

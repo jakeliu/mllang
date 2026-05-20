@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mllang-protocol"
-version = "0.1.5"
+version = "0.1.6"
 description = "MLLANG v0.1 reference parser — compact text-surface protocol for AI-agent state, lives inside markdown fenced blocks"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
@@ -27,7 +27,7 @@ dependencies = []
 
 [project.optional-dependencies]
 mcp = ["mcp>=1.0"]
-shim = ["agent-shim>=0.1.0"]
+shim = ["shim-engine>=0.1.0"]
 
 [project.scripts]
 mllang-mcp-server = "mllang.mcp_server:main"

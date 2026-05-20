@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-shim"
+name = "shim-engine"
 version = "0.1.0"
 description = "Local-first observability for LLM-agent loops. JSONL log, no SaaS, optional MLLANG awareness."
 license = {text = "Apache-2.0"}
@@ -11,7 +11,7 @@ requires-python = ">=3.9"
 authors = [
     {name = "Jake Liu"}
 ]
-keywords = ["llm", "agents", "observability", "telemetry", "instrumentation", "mllang"]
+keywords = ["llm", "agents", "observability", "telemetry", "instrumentation", "mllang", "shim"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -31,7 +31,7 @@ mllang = ["mllang-protocol>=0.1.5"]
 tiktoken = ["tiktoken>=0.5"]
 
 [project.scripts]
-agent-shim-report = "agent_shim.report:main"
+shim-engine-report = "shim_engine.report:main"
 
 [project.urls]
 Homepage = "https://github.com/jakeliu/mllang"
@@ -40,4 +40,4 @@ Documentation = "https://github.com/jakeliu/mllang/blob/main/docs/shim.md"
 Issues = "https://github.com/jakeliu/mllang/issues"
 
 [tool.setuptools.packages.find]
-include = ["agent_shim*"]
+include = ["shim_engine*"]

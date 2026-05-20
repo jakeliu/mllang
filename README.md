@@ -176,7 +176,7 @@ pip install -e parser/
 - [Markdown-embedded usage](docs/markdown-embedded.md)
 - [Bootstrap — 3-layer setup](docs/bootstrap.md)
 - [MCP server](docs/mcp.md)
-- [agent-shim — observability](docs/shim.md)
+- [shim-engine — observability](docs/shim.md)
 - [Telemetry & privacy](docs/telemetry.md)
 - [FAQ](docs/faq.md)
 - [Conformance tests](conformance/)
@@ -191,20 +191,20 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Quarterly RFC review windows. Multi-vend
 
 ---
 
-## Sister package — `agent-shim`
+## Sister package — `shim-engine`
 
 Same repo, separate PyPI listing. Local-first observability for LLM-agent loops — token / latency / cost / outcome distribution in a JSONL log, aggregated by a small CLI. Works with **any** model. Optional MLLANG awareness for 5x more signal.
 
 ```bash
-pip install agent-shim               # standalone (any LLM)
-pip install 'agent-shim[mllang]'     # auto-extract halt / confidence / agent code from MLLANG responses
+pip install shim-engine               # standalone (any LLM)
+pip install 'shim-engine[mllang]'     # auto-extract halt / confidence / agent code from MLLANG responses
 pip install 'mllang-protocol[shim]'  # same as above, reverse install order
 ```
 
 Killer demo:
 
 ```text
-$ agent-shim-report calls.jsonl
+$ shim-engine-report calls.jsonl
 200 packets logged
 mean token reduction:  56.8% vs JSON-RPC equivalent  (200/200 packets MLLANG-tagged)
 estimated tokens saved: 9,536

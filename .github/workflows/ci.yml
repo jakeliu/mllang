@@ -49,11 +49,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install mllang-protocol + agent-shim with MLLANG extras
+      - name: Install mllang-protocol + shim-engine with MLLANG extras
         run: |
           pip install -e parser/
           pip install -e 'shim/[mllang]'
-      - name: Run agent-shim end-to-end test
+      - name: Run shim-engine end-to-end test
         run: python conformance/test_shim.py
 
   lint-spec:

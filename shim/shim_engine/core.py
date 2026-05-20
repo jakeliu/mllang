@@ -1,4 +1,4 @@
-"""agent-shim core — recorder + context manager + decorator."""
+"""shim-engine core — recorder + context manager + decorator."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ from dataclasses import asdict, dataclass, field
 from functools import wraps
 from typing import Any, Callable, Dict, Iterator, List, Optional, Union
 
-DEFAULT_LOG_PATH = os.environ.get("AGENT_SHIM_LOG", "agent_shim.jsonl")
-DEFAULT_COST_PER_M = float(os.environ.get("AGENT_SHIM_COST_PER_M", "5.0"))
+DEFAULT_LOG_PATH = os.environ.get("SHIM_ENGINE_LOG", "shim_engine.jsonl")
+DEFAULT_COST_PER_M = float(os.environ.get("SHIM_ENGINE_COST_PER_M", "5.0"))
 
 # Optional MLLANG awareness — graceful when absent.
 try:

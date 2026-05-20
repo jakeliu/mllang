@@ -1,11 +1,11 @@
-"""agent-shim CLI report.
+"""shim-engine CLI report.
 
 Usage:
-    agent-shim-report <log.jsonl>
-    agent-shim-report --json <log.jsonl>          # machine-readable summary
-    agent-shim-report --cost-per-M 8 <log.jsonl>  # override cost assumption
+    shim-engine-report <log.jsonl>
+    shim-engine-report --json <log.jsonl>          # machine-readable summary
+    shim-engine-report --cost-per-M 8 <log.jsonl>  # override cost assumption
 
-Reads a JSONL file produced by agent_shim.Recorder.observe() and prints an
+Reads a JSONL file produced by shim_engine.Recorder.observe() and prints an
 aggregated summary: counts, mean token reduction (when MLLANG packets are
 present), latency percentiles, halt distribution, model distribution,
 estimated cost saved.
@@ -112,7 +112,7 @@ def _format_text(summary: Dict[str, Any], path: str, cost_per_M: float) -> str:
             f"@ ${cost_per_M:.2f}/M tokens"
         )
     else:
-        lines.append("(no MLLANG packets detected — install agent-shim[mllang] for richer signal)")
+        lines.append("(no MLLANG packets detected — install shim-engine[mllang] for richer signal)")
     lines.append(
         f"tokens in/out:         {summary['tokens_in_total']:,} / {summary['tokens_out_total']:,}"
     )
@@ -141,10 +141,10 @@ def _format_text(summary: Dict[str, Any], path: str, cost_per_M: float) -> str:
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="agent-shim-report",
-        description="Aggregate metrics from an agent-shim JSONL log.",
+        prog="shim-engine-report",
+        description="Aggregate metrics from a shim-engine JSONL log.",
     )
-    parser.add_argument("path", help="path to agent_shim JSONL log")
+    parser.add_argument("path", help="path to shim_engine JSONL log")
     parser.add_argument(
         "--json",
         action="store_true",

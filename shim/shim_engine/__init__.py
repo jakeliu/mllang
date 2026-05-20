@@ -1,11 +1,11 @@
-"""agent-shim — local-first observability for LLM-agent loops.
+"""shim-engine — local-first observability for LLM-agent loops.
 
 Wrap any LLM call, get token/latency/cost/outcome metrics into a JSONL
 log. Zero hard dependencies; optional MLLANG awareness when installed
 with the `[mllang]` extra.
 
 Usage:
-    from agent_shim import record
+    from shim_engine import record
 
     with record("calls.jsonl") as r:
         response = llm_client.chat(...)
@@ -19,7 +19,7 @@ Usage:
         )
 
 CLI:
-    agent-shim-report calls.jsonl
+    shim-engine-report calls.jsonl
 """
 
 from .core import (

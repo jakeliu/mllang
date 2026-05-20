@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""End-to-end agent-shim test.
+"""End-to-end shim-engine test.
 
 Exercises the full Recorder → JSONL → report-CLI path with both
 "standalone" (no MLLANG packets in the responses) and "with MLLANG"
 modes. Verifies metrics arithmetic + signal extraction + report format.
 
-Skipped (exit 0 with a message) when `agent-shim` is not installed.
+Skipped (exit 0 with a message) when `shim-engine` is not installed.
 """
 
 from __future__ import annotations
@@ -16,22 +16,22 @@ import sys
 import tempfile
 
 
-def _have_agent_shim() -> bool:
+def _have_shim_engine() -> bool:
     try:
-        import agent_shim  # noqa: F401
+        import shim_engine  # noqa: F401
     except ImportError:
         return False
     return True
 
 
 def main() -> int:
-    if not _have_agent_shim():
-        print("agent-shim not installed — skipping end-to-end test.")
+    if not _have_shim_engine():
+        print("shim-engine not installed — skipping end-to-end test.")
         print("To run: pip install -e shim/")
         return 0
 
-    from agent_shim import Recorder, record
-    from agent_shim.report import summarize
+    from shim_engine import Recorder, record
+    from shim_engine.report import summarize
 
     passed = failed = 0
 
@@ -179,7 +179,7 @@ def main() -> int:
                not rows[0]["has_mllang_packet"])
 
     print()
-    print(f"--- agent-shim E2E: {passed} passed, {failed} failed ---")
+    print(f"--- shim-engine E2E: {passed} passed, {failed} failed ---")
     return 0 if failed == 0 else 1
 
 
