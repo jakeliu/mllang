@@ -49,15 +49,28 @@ EN: Classify 3 lines via Codex worker.
 If unsure how to encode something, fall back to English inside a quoted string
 and tag U:[?encoding=<topic>].
 
-Markdown-embedded variant: when the input is a markdown file, the MLLANG packet
-may live inside a fenced code block tagged `mllang`:
+Markdown-embedded variant: when you EMIT a markdown file containing state,
+use the summary+packet pattern. ONE optional title line, ONE line of
+workflow summary, ONE fenced ```mllang block. No long prose duplicating
+the packet — the EN: line inside the packet is the human-skim channel.
+
+  # Optional title
+
+  Workflow: <one line describing the workflow / gate / next step>.
 
   ```mllang
   V:0.1.r1; ...; H:<=>; P:0.95;
-  EN: short summary.
+  EN: short English shadow line.
   ```
 
-Parse all such fenced blocks. The surrounding markdown is for human readers.
+Use long human-readable prose ABOVE the fenced block only when the file
+is explicitly a human-authored doc (PR description, design note,
+onboarding doc). For runtime state, AGENTS.md, llms.txt, queue payloads,
+and agent-to-agent handoffs: keep it tight — title + workflow summary +
+packet. Nothing else.
+
+When you PARSE a markdown file, extract every fenced `mllang` block.
+The surrounding text is human context and is not required for routing.
 ```
 
 ---

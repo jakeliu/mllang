@@ -33,7 +33,21 @@ N:@K -> <verb>; H:<halt>; P:<float>;
 EN: <one-sentence English shadow of packet intent>.
 ```
 
-When embedded in markdown documents, wrap the packet in a fenced code block tagged `mllang`.
+When embedded in markdown documents, use the **summary+packet** pattern:
+optional title, ONE line of workflow summary, ONE fenced `mllang` block.
+The `EN:` line inside the packet is the human-skim channel — do not
+duplicate it as long prose above the block.
+
+````markdown
+# <task title>
+
+Workflow: <one line — what, gate, next step>.
+
+```mllang
+V:0.1.r1; ...; H:<halt>; P:<float>;
+EN: <one-sentence shadow>.
+```
+````
 
 ## Failure modes to avoid
 

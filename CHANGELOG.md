@@ -4,6 +4,29 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.1] — 2026-05-20
+
+### Added
+- `sanitize()` and `sanitize_to_json()` — library-side telemetry redaction with 4 levels (`off` / `shape` / `structured` / `full`) controlled by `MLLANG_TELEMETRY` env var. Slot SHAPES public, slot VALUES private. Thread ids hashed (sha256_12). File paths and tool-call args never logged.
+- Defense-in-depth leak detector (email / file path / API-key / long-quote regex). Refuses payloads instead of redacting.
+- `embed_in_markdown()` and `extract_summary_and_packet()` helpers with three modes:
+  - `summary` (default) — title + 1-line workflow summary + fenced packet block. For agent-loaded files.
+  - `verbose` — long prose + packet. For human-authored docs.
+  - `packet_only` — block alone. For pipelines.
+- `docs/telemetry.md` — slot-by-slot redaction rules, before/after examples, opt-in flow.
+- `.github/SECURITY.md` — disclosure policy + IP-leak bug bounty.
+- 34 sanitize conformance tests + 10 embed conformance tests (total suite now 160 packets, was 116).
+
+### Changed
+- `docs/markdown-embedded.md` — rewritten around `summary` mode (compact 1-line workflow summary + packet) as the primary pattern. `verbose` mode is opt-in for human-read docs. EN: line is the dual-channel.
+- README — new 30-second example uses `embed_in_markdown()` + summary mode end to end. Status counts updated.
+- `parser/pyproject.toml` — dropped `../README.md` and `../LICENSE` file references that broke editable install on CI. Inline SPDX `Apache-2.0` license string.
+
+### Fixed
+- CI green on Python 3.9 / 3.10 / 3.11 / 3.12 after pyproject.toml fix (prior v0.1.0 tag had failing CI).
+
+---
+
 ## [0.1.0] — 2026-05-20
 
 ### Added

@@ -25,7 +25,7 @@ If the task has only free-text instructions (no MLLANG):
 ```
 # Task result
 
-<one-paragraph human-readable summary>
+Workflow: <one line — what was done, gate result, next step>.
 
 ​```mllang
 <full updated MLLANG packet on a single logical line, slots semicolon-separated>
@@ -33,7 +33,12 @@ EN: <one-sentence English shadow>
 ​```
 ```
 
-The fenced `mllang` block is the source of truth for downstream agents. The human summary above it is for the user to scan.
+Summary+packet pattern: ONE line above the fenced block, not a full
+paragraph. The `EN:` line inside the packet is the human-skim channel.
+The fenced `mllang` block is the source of truth for downstream agents.
+
+Use a longer prose summary above the block only when the task explicitly
+requires a human-authored doc (PR description, design note).
 
 ---
 

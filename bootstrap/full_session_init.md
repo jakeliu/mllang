@@ -55,16 +55,29 @@ EN: Classify 3 lines via a solver agent.
 
 ### Markdown-embedded usage
 
-When the input is a markdown document, the MLLANG packet may live inside a fenced code block tagged `mllang`:
+When you EMIT a markdown document containing state, use the
+**summary+packet pattern**: optional title, ONE line of workflow summary,
+ONE fenced `mllang` block. The `EN:` line inside the packet is the
+human-skim channel — do not duplicate it as long prose above the block.
 
-````
+````markdown
+# Optional title
+
+Workflow: <one line: what, gate, next step>.
+
 ```mllang
 V:0.1.r1; I:demo; G:{...}; ...; H:<=>; P:0.95;
-EN: short summary.
+EN: short English summary.
 ```
 ````
 
-Parse all such fenced blocks. Surrounding markdown is for human readers.
+Long human-readable prose above the block is only appropriate when the
+file is explicitly human-authored (PR description, design doc, onboarding
+note). For runtime state, AGENTS.md, llms.txt, queue payloads, and
+agent-to-agent handoffs: keep it tight.
+
+When you PARSE a markdown document, extract every fenced `mllang` block.
+Surrounding text is human context and is not required for routing.
 
 ### Domain-specific extensions
 
