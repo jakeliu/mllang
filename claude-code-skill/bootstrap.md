@@ -91,6 +91,16 @@ Domain-specific detector ids, role tags, beat-routing — these live in `lib_<do
 - Do not invent file paths. Use what the user provided.
 - ASCII only outside quoted strings.
 
+### Budget self-reporting (Claude Code sub-agents)
+
+When you are spawned as a sub-agent via the Claude Code `Agent` tool and you have access to your own `response.usage` (or equivalent vendor field), include a `B:` budget slot in your final MLLANG packet with the totals for THIS turn:
+
+```
+B:{tokens_in=N, tokens_out=N, time=Ns}
+```
+
+Substitute the actual integer token counts and seconds. This lets the parent session aggregate real cost across sub-agent calls via `/mllang report`. Missing the `B:` slot is allowed (the parent will record zeros) but discouraged.
+
 ### Confirmation
 
 Once you've read this init, respond with a single MLLANG packet acknowledging the spec is understood:
