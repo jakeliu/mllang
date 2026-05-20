@@ -93,17 +93,42 @@ class Packet:
 # ── Parser ──────────────────────────────────────────────────────────────
 
 
+_INLINE_EN_RE = re.compile(r"(?:^|[;\s])EN:\s*", re.MULTILINE)
+
+
 def _strip_en_shadow(text: str) -> tuple[str, str]:
-    """Strip EN: shadow line from end, return (packet_text, en_text)."""
+    """Strip EN: shadow line, return (packet_text, en_text).
+
+    Accepts both forms:
+        - EN: on its own line (canonical)
+        - EN: inline after the last slot on the same line (common
+          output from models that emit one-line packets)
+    """
+    # Multi-line case — strip lines starting with EN:.
     lines = text.strip().splitlines()
     en = ""
-    packet_lines = []
+    packet_lines: List[str] = []
     for line in lines:
         if line.startswith("EN:"):
             en = line[len("EN:"):].strip()
         else:
             packet_lines.append(line)
-    return " ".join(packet_lines).strip(), en
+    joined = " ".join(packet_lines).strip()
+
+    # Inline case — find the first EN: that follows a slot terminator
+    # or whitespace boundary and split there.
+    m = _INLINE_EN_RE.search(joined)
+    if m:
+        en_inline = joined[m.end():].strip()
+        joined = joined[: m.start()].strip()
+        # Prefer the inline shadow if no multiline shadow was captured;
+        # otherwise concatenate so neither channel is lost.
+        if not en:
+            en = en_inline
+        elif en_inline and en_inline != en:
+            en = f"{en} {en_inline}".strip()
+
+    return joined, en
 
 
 def _split_slots(packet_text: str) -> List[tuple[str, str]]:

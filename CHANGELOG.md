@@ -4,6 +4,26 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.4] — 2026-05-20
+
+### Fixed
+- Parser correctly handles `EN:` shadow line emitted inline (same line as the packet, after the final `;`), not only on its own line. Affected any model that returns one-line packets — surfaced when ratifying DeepSeek V3 / Kimi K2.6 / Qwen 3.6, all of which emit single-line output by default. 3 new parse-suite test cases lock the fix.
+
+### Added — Chinese-family ratification pass
+- DeepSeek V3 — ratified (P:0.92, 1 round)
+- Kimi K2.6 (Moonshot) — ratified (P:0.88, 1 round)
+- Qwen 3.6 (Alibaba) — ratified (P:0.85, 1 round)
+- Tested via krater.ai (multi-vendor chat router). All three converged in **1 round per backend** because the spec is locked — each needed only to acknowledge and emit a valid packet, not negotiate the grammar.
+- Mean across all 9 ratified vendors: 0.93 confidence.
+- Audit trail: `examples/ratification_chinese_2026-05-20.jsonl`.
+- README ratification table updated. Badge bumped from `vendors-6+` to `vendors-9+`.
+
+### Conformance
+- Parse tests: 50 → 53 (3 inline-EN cases added).
+- Total suite: 160 → 166 passed, 0 failed.
+
+---
+
 ## [0.1.3] — 2026-05-20
 
 ### Added

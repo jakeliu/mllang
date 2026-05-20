@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/mllang-protocol.svg)](https://pypi.org/project/mllang-protocol/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Spec: v0.1 locked](https://img.shields.io/badge/spec-v0.1_locked-green.svg)](spec/MLLANG_v0.1.locked.md)
-[![Vendors: 6+](https://img.shields.io/badge/vendors-6%2B_ratified-orange.svg)](spec/MLLANG_v0.1.locked.md)
+[![Vendors: 9+](https://img.shields.io/badge/vendors-9%2B_ratified-orange.svg)](spec/MLLANG_v0.1.locked.md)
 [![CI](https://github.com/jakeliu/mllang/actions/workflows/ci.yml/badge.svg)](https://github.com/jakeliu/mllang/actions/workflows/ci.yml)
 
 > Compact text-surface protocol for AI-agent state. Lives inside markdown fenced blocks. Cross-vendor ratified across 6+ LLM families.
@@ -119,10 +119,15 @@ MLLANG v0.1 was tested across these LLM families before locking:
 | Google | Gemini Pro web, Gemini Flash CLI | ✅ ratified |
 | Google (local) | Gemma-4 26B (AIR backend) | ✅ ratified |
 | Google (local) | Gemma-4 4B (local, ~4B params) | ✅ ratified — small-model compactness test PASS |
+| DeepSeek | DeepSeek V3 | ✅ ratified (P:0.92, 1 round) |
+| Moonshot | Kimi K2.6 | ✅ ratified (P:0.88, 1 round) |
+| Alibaba | Qwen 3.6 | ✅ ratified (P:0.85, 1 round) |
 
-Mean ratification confidence: **0.95**. Spec locked 2026-05-19.
+Mean ratification confidence: **0.93** (0.95 original 6 vendors + 0.883 Chinese 3-vendor pass). Spec locked 2026-05-19.
 
-Audit trail: [`examples/05_negotiation_trace.jsonl`](examples/05_negotiation_trace.jsonl) (sanitized).
+Audit trail: [`examples/05_negotiation_trace.jsonl`](examples/05_negotiation_trace.jsonl) (original 6), [`examples/ratification_chinese_2026-05-20.jsonl`](examples/ratification_chinese_2026-05-20.jsonl) (Chinese pass).
+
+The Chinese-family pass converged in **1 round per model** (vs 3 rounds for the original spec-locking pass) because the spec was already locked — each backend only needed to acknowledge and emit a valid packet, not negotiate the grammar.
 
 ---
 
