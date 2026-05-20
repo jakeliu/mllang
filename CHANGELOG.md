@@ -4,7 +4,25 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
-## [0.1.7] — 2026-05-20
+## [0.1.8] — 2026-05-20
+
+### Added — cross-CLI mailbox (the killer feature for multi-agent loops)
+- Three new MCP tools in `mllang-mcp-server`:
+  - **`mailbox_send(to, body, from_, subject, tags)`** — drop a message into another agent's inbox at `~/.mllang-mailbox/<to>/inbox/`.
+  - **`mailbox_check(box, unread_only, since, mark_read)`** — read messages from your inbox; `mark_read=True` (default) moves them to `/read/` so re-checks don't re-deliver.
+  - **`mailbox_status()`** — quick stats: which boxes have unread, which are read.
+- Configure the SAME MCP server in Claude Code, Codex CLI, Cursor, Cline, Zed, or Claude Desktop, and they all share the same `~/.mllang-mailbox/` directory on disk. Filesystem is the transport; MCP is the operation API. No long-running daemon.
+- New console script **`mllang-mailbox`** for shell-direct use: `mllang-mailbox send <to> "<body>"`, `mllang-mailbox check <box>`, `mllang-mailbox status`. Pipes cleanly with `jq`, cron, or any shell.
+- Mailbox root is configurable via `MLLANG_MAILBOX_ROOT` env var (default: `~/.mllang-mailbox`).
+- Bodies can be any text — including MLLANG packets. Recipient parses them via the existing `mllang_parse` tool. Cross-vendor MLLANG transport via mailbox = full dogfood.
+- MCP E2E: 22 → 30 assertions covering send → status → check → re-check → reply round-trip → unread_only history fetch.
+
+### Fixed
+- Restored proper version bump after v0.1.7 tag shipped without updating `parser/pyproject.toml` or `parser/mllang/__init__.py`. The v0.1.7 GitHub tag exists but the release workflow rebuilt 0.1.6 wheels and hit `skip-existing` on PyPI — no new artifact was published. v0.1.8 is the first PyPI release after v0.1.6.
+
+---
+
+## [0.1.7] — 2026-05-20 (tag only, no PyPI artifact)
 
 ### Added — Codex CLI integration, conservative Path 1
 - New `codex-cli-integration/` with a session-JSONL parser for Codex CLI. It reads `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, emits one `shim-engine` record per completed Codex turn, and tags `budget_source` as `B-slot`, `session-token_count`, or `none`.

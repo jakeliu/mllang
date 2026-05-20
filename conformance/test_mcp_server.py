@@ -40,13 +40,22 @@ SAMPLE_PACKET = (
 
 
 async def _run() -> int:
+    import os as _os
+    import tempfile as _tempfile
+
     from mcp import ClientSession
     from mcp.client.stdio import StdioServerParameters, stdio_client
+
+    # Route mailbox writes to a throwaway dir so the test never touches
+    # the user's real ~/.mllang-mailbox/.
+    mailbox_tmp = _tempfile.mkdtemp(prefix="mllang_mailbox_test_")
+    server_env = _os.environ.copy()
+    server_env["MLLANG_MAILBOX_ROOT"] = mailbox_tmp
 
     params = StdioServerParameters(
         command=sys.executable,
         args=["-m", "mllang.mcp_server"],
-        env=None,
+        env=server_env,
     )
 
     failed = 0
@@ -82,6 +91,10 @@ async def _run() -> int:
         async with ClientSession(read, write) as session:
             await session.initialize()
 
+            # Route mailbox writes to a temp dir so the test never touches ~/.mllang-mailbox
+            # (we already initialized the server before this point, so the env var must
+            # be set BEFORE stdio_client; do it via params.env if needed in future)
+
             tools_resp = await session.list_tools()
             tool_names = {t.name for t in tools_resp.tools}
             expected = {
@@ -92,9 +105,12 @@ async def _run() -> int:
                 "mllang_extract_summary",
                 "mllang_sanitize",
                 "mllang_spec",
+                "mailbox_send",
+                "mailbox_check",
+                "mailbox_status",
             }
             _check(
-                "all 7 tools advertised",
+                "all 10 tools advertised (7 mllang + 3 mailbox)",
                 expected.issubset(tool_names),
                 f"missing={expected - tool_names}",
             )
@@ -196,6 +212,86 @@ async def _run() -> int:
             _check(
                 "spec returns text containing MLLANG",
                 isinstance(spec_text, str) and "MLLANG" in spec_text,
+            )
+
+            # ── Mailbox round-trip ────────────────────────────────────
+            # 1. Claude side sends to codex's inbox
+            r = await session.call_tool(
+                "mailbox_send",
+                {
+                    "to": "codex",
+                    "body": SAMPLE_PACKET,
+                    "from_": "claude",
+                    "subject": "diff review request",
+                },
+            )
+            send_result = _unwrap(r)
+            _check(
+                "mailbox_send returns msg_id + path",
+                isinstance(send_result, dict)
+                and "msg_id" in send_result
+                and "path" in send_result,
+            )
+
+            # 2. Status shows codex has 1 unread
+            r = await session.call_tool("mailbox_status", {})
+            status = _unwrap(r)
+            _check(
+                "mailbox_status shows codex has 1 unread",
+                status.get("boxes", {}).get("codex", {}).get("unread") == 1,
+            )
+
+            # 3. Codex side reads its inbox
+            r = await session.call_tool("mailbox_check", {"box": "codex"})
+            msgs = _unwrap(r)
+            _check(
+                "mailbox_check returns 1 message",
+                isinstance(msgs, list) and len(msgs) == 1,
+            )
+            _check(
+                "mailbox_check message has correct from / subject / body",
+                msgs[0].get("from") == "claude"
+                and msgs[0].get("subject") == "diff review request"
+                and "V:0.1.r1" in msgs[0].get("body", ""),
+            )
+
+            # 4. Codex re-checks → empty (mark_read=True consumed it)
+            r = await session.call_tool("mailbox_check", {"box": "codex"})
+            msgs2 = _unwrap(r)
+            _check(
+                "mailbox_check after read returns empty (default mark_read)",
+                isinstance(msgs2, list) and len(msgs2) == 0,
+            )
+
+            # 5. Codex replies to claude
+            r = await session.call_tool(
+                "mailbox_send",
+                {
+                    "to": "claude",
+                    "body": "Reviewed. Looks good.",
+                    "from_": "codex",
+                    "subject": "re: diff review request",
+                },
+            )
+            _check("mailbox reply lands in claude's inbox", _unwrap(r).get("msg_id"))
+
+            # 6. Claude reads codex's reply
+            r = await session.call_tool("mailbox_check", {"box": "claude"})
+            reply_msgs = _unwrap(r)
+            _check(
+                "claude reads codex's reply",
+                len(reply_msgs) == 1 and reply_msgs[0].get("from") == "codex",
+            )
+
+            # 7. unread_only=False also returns read messages
+            r = await session.call_tool(
+                "mailbox_check",
+                {"box": "codex", "unread_only": False, "mark_read": False},
+            )
+            all_msgs = _unwrap(r)
+            _check(
+                "mailbox_check unread_only=False returns history",
+                len(all_msgs) >= 1,
             )
 
     print()
