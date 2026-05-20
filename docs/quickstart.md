@@ -8,12 +8,18 @@ title: Quickstart
 ## Install
 
 ```bash
+pip install mllang-protocol
+```
+
+Or editable from the repo:
+
+```bash
 git clone https://github.com/jakeliu/mllang.git
 cd mllang
 pip install -e parser/
 ```
 
-(PyPI release coming after v0.1.0 git tag.)
+PyPI distribution name is `mllang-protocol` (the bare `mllang` PyPI name is held by an unrelated 2021 ML library). Python import path is still `from mllang import ...`.
 
 ---
 

@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mllang"
-version = "0.1.1"
+name = "mllang-protocol"
+version = "0.1.2"
 description = "MLLANG v0.1 reference parser — compact text-surface protocol for AI-agent state, lives inside markdown fenced blocks"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"

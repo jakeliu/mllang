@@ -4,6 +4,16 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.2] — 2026-05-20
+
+### Changed
+- **PyPI distribution renamed `mllang` → `mllang-protocol`**. Existing PyPI name `mllang` is held by an unrelated 2021 ML library (`mlLang` by Stefan Feuerriegel, case-insensitive collision). Install command becomes `pip install mllang-protocol`. **Python import path is unchanged** — code keeps using `from mllang import ...`.
+
+### Note
+- v0.1.1 was tagged but never published to PyPI (403 from name collision). v0.1.2 is the first PyPI release.
+
+---
+
 ## [0.1.1] — 2026-05-20
 
 ### Added

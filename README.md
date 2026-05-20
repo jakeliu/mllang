@@ -137,10 +137,22 @@ mllang/
 ## Install
 
 ```bash
-pip install mllang
+pip install mllang-protocol
 ```
 
-(PyPI release coming after v0.1.0 git tag. For now: clone repo + `pip install -e parser/`.)
+PyPI distribution name is `mllang-protocol` (the bare `mllang` name was already held by an unrelated 2021 ML library on PyPI). The Python import path is still `mllang`:
+
+```python
+from mllang import Packet, parse, embed_in_markdown, sanitize
+```
+
+Editable install from the repo also works:
+
+```bash
+git clone https://github.com/jakeliu/mllang.git
+cd mllang
+pip install -e parser/
+```
 
 ---
 
