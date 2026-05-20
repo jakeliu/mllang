@@ -17,6 +17,7 @@ from .slots import SLOT_ORDER, REQUIRED_SLOTS
 from .halt import HALT_ENUM
 from .operators import OPERATORS
 from .sanitize import sanitize, sanitize_to_json, VALID_LEVELS as TELEMETRY_LEVELS
+from .embed import embed_in_markdown, extract_summary_and_packet
 
 __version__ = "0.1.0"
 
@@ -29,6 +30,8 @@ __all__ = [
     "sanitize",
     "sanitize_to_json",
     "TELEMETRY_LEVELS",
+    "embed_in_markdown",
+    "extract_summary_and_packet",
     "SLOT_ORDER",
     "REQUIRED_SLOTS",
     "HALT_ENUM",

@@ -17,39 +17,56 @@ Multi-agent workflows need to pass state between LLM turns. JSON-RPC is verbose.
 ## 30-second example
 
 ````markdown
-# Refactor auth module to JWT
+# Refactor auth module
 
-We're switching from sessions to JWT. Preserve user DB. No breaking API.
+Workflow: switch sessions → JWT, gate on test=pass, rollback ready.
 
 ```mllang
 V:0.1.r1; I:auth-001; G:{task=refactor_auth, from=sessions, to=jwt};
 S:{users_db=preserve, api_compat=hard}; D:[migration_plan, rollback_path];
 R:[downtime, token_leak]; N:@K -> implement; H:test=pass; P:0.85;
-EN: Refactor auth sessions→JWT, preserve DB + API compat.
+EN: Refactor auth sessions → JWT, preserve DB + API compat.
 ```
 ````
 
-Humans read the markdown. Agents parse the fenced `mllang` block for routing, halt conditions, confidence.
+One-line workflow summary above the fenced block, full state inside the packet, `EN:` line for human skim. No content duplication. Agents parse the block; humans glance at the summary. Long prose is opt-in (`mode="verbose"`) for human-authored docs.
+
+See [`docs/markdown-embedded.md`](docs/markdown-embedded.md) for the full pattern.
 
 ---
 
 ## Quick start
 
 ```python
-from mllang import Packet, extract_from_markdown
+from mllang import Packet, embed_in_markdown, extract_summary_and_packet
 
-# Parse a packet
-p = Packet.parse("V:0.1.r1; I:demo; G:{task=test}; S:{x=1}; N:@K -> classify; H:<=>; P:0.85;")
-print(p.next_agent)   # @K
-print(p.halt)         # <=>
-print(p.confidence)   # 0.85
+# Build a packet
+p = Packet(
+    version="0.1.r1",
+    thread_id="auth-001",
+    goal={"task": "refactor_auth", "to": "jwt"},
+    state={"users_db": "preserve"},
+    next_agent="@K -> implement",
+    halt="test=pass",
+    confidence=0.85,
+    en_shadow="Refactor auth sessions → JWT, preserve DB.",
+)
 
-# Extract from markdown
-md = open("task.md").read()
-packets = extract_from_markdown(md)
-for p in packets:
-    print(p.thread_id, p.next_agent, p.halt)
+# Embed in markdown (summary mode = default, tight)
+md = embed_in_markdown(
+    p,
+    title="Refactor auth module",
+    summary="Workflow: switch sessions → JWT, gate on test=pass.",
+)
+
+# Pull both channels back out
+summary, packet = extract_summary_and_packet(md)
+print(summary)              # the workflow summary
+print(packet.next_agent)    # @K -> implement
+print(packet.halt)          # test=pass
 ```
+
+Three modes: `summary` (default, agent-loaded files), `verbose` (long prose for human-authored docs), `packet_only` (pure agent pipelines).
 
 ---
 
@@ -178,7 +195,7 @@ Full slot-by-slot rules and before/after examples: [`docs/telemetry.md`](docs/te
 - v0.1 spec: **LOCKED** 2026-05-19
 - v0.2 spec: draft, RFC window open
 - Parser: pure Python 3, no external deps
-- Conformance: 150-packet test suite (parse / halt / roundtrip / markdown extract / sanitize)
+- Conformance: 160-packet test suite (parse / halt / roundtrip / markdown extract / sanitize / embed)
 - Telemetry: opt-in `sanitize()` with 4 levels + leak-detector defense
 
 ---

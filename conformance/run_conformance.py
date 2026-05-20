@@ -13,7 +13,15 @@ from pathlib import Path
 # Make parser importable
 sys.path.insert(0, str(Path(__file__).parent.parent / "parser"))
 
-from mllang import Packet, parse, compose, extract_from_markdown, sanitize
+from mllang import (
+    Packet,
+    parse,
+    compose,
+    extract_from_markdown,
+    sanitize,
+    embed_in_markdown,
+    extract_summary_and_packet,
+)
 from mllang.halt import is_valid_halt
 
 
@@ -301,6 +309,85 @@ def run_sanitize_tests():
     return passed, failed
 
 
+def run_embed_tests():
+    """Test embed_in_markdown / extract_summary_and_packet behavior."""
+    path = TESTS_DIR / "embed_10.jsonl"
+    if not path.exists():
+        return 0, 0
+    passed = failed = 0
+    for line_no, line in enumerate(path.read_text().splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        case = json.loads(line)
+        name = case.get("name", f"line {line_no}")
+
+        try:
+            if case.get("extract_only"):
+                summary, parsed_pkt = extract_summary_and_packet(case["raw_markdown"])
+                if case.get("extract_expect_packet_none"):
+                    if parsed_pkt is None:
+                        passed += 1
+                    else:
+                        print(f"  FAIL embed {name}: expected no packet, got one")
+                        failed += 1
+                continue
+
+            if case.get("expect_raises_value_error"):
+                try:
+                    embed_in_markdown(case["packet"], mode=case.get("mode", "summary"))
+                    print(f"  FAIL embed {name}: expected ValueError, none raised")
+                    failed += 1
+                except ValueError:
+                    passed += 1
+                continue
+
+            md = embed_in_markdown(
+                case["packet"],
+                summary=case.get("summary", ""),
+                prose=case.get("prose"),
+                mode=case.get("mode", "summary"),
+                title=case.get("title"),
+            )
+
+            bad = False
+            for needle in case.get("must_contain", []):
+                if needle not in md:
+                    print(f"  FAIL embed {name}: missing required substring {needle!r}")
+                    bad = True
+                    break
+            if bad:
+                failed += 1
+                continue
+
+            for needle in case.get("must_not_contain", []):
+                if needle in md:
+                    print(f"  FAIL embed {name}: contains forbidden substring {needle!r}")
+                    bad = True
+                    break
+            if bad:
+                failed += 1
+                continue
+
+            if "roundtrip_check" in case:
+                summary, parsed_pkt = extract_summary_and_packet(md)
+                check = case["roundtrip_check"]
+                if "summary_equals" in check and summary != check["summary_equals"]:
+                    print(f"  FAIL embed {name}: roundtrip summary got={summary!r} expected={check['summary_equals']!r}")
+                    failed += 1
+                    continue
+                if "thread_id" in check and (parsed_pkt is None or parsed_pkt.thread_id != check["thread_id"]):
+                    print(f"  FAIL embed {name}: roundtrip thread_id mismatch")
+                    failed += 1
+                    continue
+
+            passed += 1
+        except Exception as e:
+            print(f"  FAIL embed {name}: exception {e}")
+            failed += 1
+    return passed, failed
+
+
 def main():
     print("=== MLLANG Conformance Suite ===\n")
 
@@ -319,8 +406,11 @@ def main():
     s_pass, s_fail = run_sanitize_tests()
     print(f"SANITIZE tests:   {s_pass} passed, {s_fail} failed")
 
-    total_pass = p_pass + h_pass + r_pass + m_pass + s_pass
-    total_fail = p_fail + h_fail + r_fail + m_fail + s_fail
+    e_pass, e_fail = run_embed_tests()
+    print(f"EMBED tests:      {e_pass} passed, {e_fail} failed")
+
+    total_pass = p_pass + h_pass + r_pass + m_pass + s_pass + e_pass
+    total_fail = p_fail + h_fail + r_fail + m_fail + s_fail + e_fail
 
     print(f"\n--- TOTAL: {total_pass} passed, {total_fail} failed ---")
     sys.exit(0 if total_fail == 0 else 1)
