@@ -1,8 +1,10 @@
 # MLLANG — Markdown Language for AI Agents
 
+[![PyPI](https://img.shields.io/pypi/v/mllang-protocol.svg)](https://pypi.org/project/mllang-protocol/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Spec: v0.1 locked](https://img.shields.io/badge/spec-v0.1_locked-green.svg)](spec/MLLANG_v0.1.locked.md)
 [![Vendors: 6+](https://img.shields.io/badge/vendors-6%2B_ratified-orange.svg)](spec/MLLANG_v0.1.locked.md)
+[![CI](https://github.com/jakeliu/mllang/actions/workflows/ci.yml/badge.svg)](https://github.com/jakeliu/mllang/actions/workflows/ci.yml)
 
 > Compact text-surface protocol for AI-agent state. Lives inside markdown fenced blocks. Cross-vendor ratified across 6+ LLM families.
 
