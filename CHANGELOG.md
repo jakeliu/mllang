@@ -4,6 +4,20 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.7] — 2026-05-20
+
+### Added — Codex CLI integration, conservative Path 1
+- New `codex-cli-integration/` with a session-JSONL parser for Codex CLI. It reads `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, emits one `shim-engine` record per completed Codex turn, and tags `budget_source` as `B-slot`, `session-token_count`, or `none`.
+- `codex_session_parser.py` supports one-shot file parsing, `--latest`, `--watch`, and `--stdin-events` for `codex exec --json` streams.
+- `extract_budget.py` ports the Claude-side B-slot extraction helper, with a regex fallback when `mllang-protocol` is not importable.
+- `codex-mllang-report.sh`, `codex_exec_wrapper.sh`, and `install.sh` mirror the Claude Code skill's ergonomics without installing hooks.
+- Redacted real Codex rollout fixture plus parser test coverage: B-slot override, session-token fallback, malformed JSONL tolerance, empty rollout handling, tag shape, and fixture redaction.
+
+### Note
+- This release does **not** claim Claude Code hook parity. Codex hook support exists internally, but user-level hook config and sub-agent payloads are not fixture-backed yet. Sub-agent-only cost slicing is deferred.
+
+---
+
 ## [0.1.6] — 2026-05-20
 
 ### Renamed before first publish

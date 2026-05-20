@@ -140,6 +140,7 @@ mllang/
 ├── examples/              5 generic packet examples + markdown-embedded demo
 ├── bootstrap/             Role prompts (orchestrator, critic, implementer, synthesizer)
 ├── conformance/           Test suite — any parser implementation can score against it
+├── codex-cli-integration/ Conservative Codex CLI session parser + report wrapper
 ├── docs/                  GitHub Pages site
 ├── rfc/                   Quarterly RFC proposals
 └── .github/workflows/     CI: conformance test on PR
@@ -241,6 +242,28 @@ Then in Claude Code:
 ```
 
 The sub-agent log is privacy-redacted (slot SHAPES only, no slot values) and lives at `~/.claude/mllang-shim/session.jsonl`. Full guide: [`claude-code-skill/README.md`](claude-code-skill/README.md).
+
+---
+
+## Codex CLI integration
+
+Conservative Path 1 for Codex CLI. No hooks are installed. The integration parses Codex's persisted session JSONL under `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, records one `shim-engine` row per completed turn, and reports real tokens in/out from Codex `token_count` events.
+
+Install:
+
+```bash
+bash codex-cli-integration/install.sh
+pip install 'shim-engine[mllang]'    # optional, enables reports
+```
+
+Use:
+
+```bash
+python3 ~/.codex/mllang-integration/scripts/codex_session_parser.py --latest
+bash ~/.codex/mllang-integration/scripts/codex-mllang-report.sh
+```
+
+Budget source is tagged honestly: `B-slot` when the final MLLANG packet self-reports `B:{tokens_in=..., tokens_out=..., time=...}`, otherwise `session-token_count`, otherwise `none`. Capture boundary is top-level Codex turn, not sub-agent. Full guide: [`codex-cli-integration/README.md`](codex-cli-integration/README.md).
 
 ---
 
