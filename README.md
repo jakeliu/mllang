@@ -132,9 +132,11 @@ pip install mllang
 - [Specification (v0.1 locked)](spec/MLLANG_v0.1.locked.md)
 - [Quickstart](docs/quickstart.md)
 - [Markdown-embedded usage](docs/markdown-embedded.md)
+- [Telemetry & privacy](docs/telemetry.md)
 - [FAQ](docs/faq.md)
 - [Conformance tests](conformance/)
 - [RFC process](rfc/README.md)
+- [Security policy](.github/SECURITY.md)
 
 ---
 
@@ -144,12 +146,40 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Quarterly RFC review windows. Multi-vend
 
 ---
 
+## Telemetry & privacy
+
+MLLANG ships with a built-in `sanitize()` function. Telemetry is **opt-in only**, **off by default**, and the library never auto-enables it.
+
+```bash
+# default — nothing sent
+export MLLANG_TELEMETRY=off
+
+# opt-in levels:
+export MLLANG_TELEMETRY=shape        # slot presence + halt + confidence (recommended)
+export MLLANG_TELEMETRY=structured   # add map keys + verb names + counts
+export MLLANG_TELEMETRY=full         # add redacted values (research consent only)
+```
+
+```python
+from mllang import sanitize, sanitize_to_json
+
+payload = sanitize(packet)         # None unless env var set
+line = sanitize_to_json(packet)    # None or one-line JSON
+```
+
+Slot **shapes** are public; slot **values** stay private. Thread ids are hashed (`<I:hash:<sha256_12>>`), file paths and tool args are never logged, and a leak-detector refuses payloads that still contain emails / paths / API-key patterns / long quoted strings.
+
+Full slot-by-slot rules and before/after examples: [`docs/telemetry.md`](docs/telemetry.md). Disclosure policy and IP-leak bug bounty: [`.github/SECURITY.md`](.github/SECURITY.md).
+
+---
+
 ## Status
 
 - v0.1 spec: **LOCKED** 2026-05-19
 - v0.2 spec: draft, RFC window open
 - Parser: pure Python 3, no external deps
-- Conformance: 115-packet test suite
+- Conformance: 150-packet test suite (parse / halt / roundtrip / markdown extract / sanitize)
+- Telemetry: opt-in `sanitize()` with 4 levels + leak-detector defense
 
 ---
 

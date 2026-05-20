@@ -13,7 +13,7 @@ from pathlib import Path
 # Make parser importable
 sys.path.insert(0, str(Path(__file__).parent.parent / "parser"))
 
-from mllang import Packet, parse, compose, extract_from_markdown
+from mllang import Packet, parse, compose, extract_from_markdown, sanitize
 from mllang.halt import is_valid_halt
 
 
@@ -134,6 +134,173 @@ EN: Second packet.
     return 1, 0
 
 
+def run_sanitize_tests():
+    """Test sanitize() telemetry redaction behavior."""
+    path = TESTS_DIR / "sanitize_30.jsonl"
+    if not path.exists():
+        return 0, 0
+    passed = failed = 0
+    for line_no, line in enumerate(path.read_text().splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        case = json.loads(line)
+        name = case.get("name", f"line {line_no}")
+        level = case.get("level", "shape")
+
+        try:
+            # Special multi-input case
+            if case.get("check") == "thread_hashes_differ":
+                o1 = sanitize(case["input1"], level=level)
+                o2 = sanitize(case["input2"], level=level)
+                if o1 is None or o2 is None:
+                    print(f"  FAIL sanitize {name}: one payload null")
+                    failed += 1
+                    continue
+                if o1["thread_hash"] == o2["thread_hash"]:
+                    print(f"  FAIL sanitize {name}: thread_hash collision {o1['thread_hash']}")
+                    failed += 1
+                    continue
+                passed += 1
+                continue
+
+            # Optionally accept Packet object
+            payload_input = case["input"]
+            if case.get("input_as_packet_object"):
+                payload_input = parse(payload_input)
+
+            reject_leaks = case.get("reject_leaks", True)
+            out = sanitize(payload_input, level=level, reject_leaks=reject_leaks)
+
+            expect = case.get("expect", "__SKIP__")
+            if expect is None:
+                if out is None:
+                    passed += 1
+                else:
+                    print(f"  FAIL sanitize {name}: expected None, got payload")
+                    failed += 1
+                continue
+
+            if expect == "__SKIP__":
+                pass  # Use other assertion fields
+            else:
+                bad = False
+                for k, v in expect.items():
+                    if out is None:
+                        print(f"  FAIL sanitize {name}: expected {k}={v!r}, got None payload")
+                        bad = True
+                        break
+                    if out.get(k) != v:
+                        print(f"  FAIL sanitize {name}: {k} got={out.get(k)!r} expected={v!r}")
+                        bad = True
+                        break
+                if bad:
+                    failed += 1
+                    continue
+
+            if "must_not_contain_substring" in case:
+                needle = case["must_not_contain_substring"]
+                blob = json.dumps(out) if out is not None else ""
+                if needle in blob:
+                    print(f"  FAIL sanitize {name}: payload contains forbidden substring {needle!r}")
+                    failed += 1
+                    continue
+
+            if "expect_contains_slots" in case:
+                if out is None or not set(case["expect_contains_slots"]).issubset(set(out.get("slots_present", []))):
+                    print(f"  FAIL sanitize {name}: slots_present missing required entries")
+                    failed += 1
+                    continue
+
+            if "expect_thread_hash_prefix" in case:
+                if out is None or not out.get("thread_hash", "").startswith(case["expect_thread_hash_prefix"]):
+                    print(f"  FAIL sanitize {name}: thread_hash prefix mismatch ({out.get('thread_hash') if out else 'None'})")
+                    failed += 1
+                    continue
+
+            if "expect_thread_hash_equals" in case:
+                if out is None or out.get("thread_hash") != case["expect_thread_hash_equals"]:
+                    print(f"  FAIL sanitize {name}: thread_hash mismatch: {out.get('thread_hash') if out else 'None'}")
+                    failed += 1
+                    continue
+
+            if "expect_goal_keys" in case:
+                if out is None or sorted(out.get("goal_keys", [])) != sorted(case["expect_goal_keys"]):
+                    print(f"  FAIL sanitize {name}: goal_keys mismatch: {out.get('goal_keys') if out else 'None'}")
+                    failed += 1
+                    continue
+
+            if "expect_state_keys" in case:
+                if out is None or sorted(out.get("state_keys", [])) != sorted(case["expect_state_keys"]):
+                    print(f"  FAIL sanitize {name}: state_keys mismatch")
+                    failed += 1
+                    continue
+
+            if "expect_test_results" in case:
+                if out is None or out.get("test_results") != case["expect_test_results"]:
+                    print(f"  FAIL sanitize {name}: test_results mismatch")
+                    failed += 1
+                    continue
+
+            if "expect_tool_verbs" in case:
+                if out is None or sorted(out.get("tool_verbs", [])) != sorted(case["expect_tool_verbs"]):
+                    print(f"  FAIL sanitize {name}: tool_verbs mismatch")
+                    failed += 1
+                    continue
+
+            if "expect_counts" in case:
+                if out is None:
+                    print(f"  FAIL sanitize {name}: payload null for counts check")
+                    failed += 1
+                    continue
+                bad = False
+                for k, v in case["expect_counts"].items():
+                    if out.get(k) != v:
+                        print(f"  FAIL sanitize {name}: count {k} got={out.get(k)} expected={v}")
+                        bad = True
+                        break
+                if bad:
+                    failed += 1
+                    continue
+
+            if "expect_goal_values_redacted" in case:
+                if out is None or out.get("goal_values_redacted") != case["expect_goal_values_redacted"]:
+                    print(f"  FAIL sanitize {name}: goal_values_redacted mismatch: {out.get('goal_values_redacted') if out else 'None'}")
+                    failed += 1
+                    continue
+
+            if "expect_state_values_redacted" in case:
+                if out is None or out.get("state_values_redacted") != case["expect_state_values_redacted"]:
+                    print(f"  FAIL sanitize {name}: state_values_redacted mismatch: {out.get('state_values_redacted') if out else 'None'}")
+                    failed += 1
+                    continue
+
+            if "expect_assumptions_prefix_length_each_le" in case:
+                cap = case["expect_assumptions_prefix_length_each_le"]
+                if out is None or any(len(a) > cap for a in out.get("assumptions_prefix", [])):
+                    print(f"  FAIL sanitize {name}: assumption prefix exceeds {cap} chars")
+                    failed += 1
+                    continue
+
+            if "expect_operators_contains" in case:
+                if out is None or not set(case["expect_operators_contains"]).issubset(set(out.get("operators_used", []))):
+                    print(f"  FAIL sanitize {name}: operators_used missing required entries: have {out.get('operators_used') if out else 'None'}")
+                    failed += 1
+                    continue
+
+            if "expect_halt_categories" in case:
+                if out is None or out.get("halt_categories") != case["expect_halt_categories"]:
+                    print(f"  FAIL sanitize {name}: halt_categories mismatch")
+                    failed += 1
+                    continue
+
+            passed += 1
+        except Exception as e:
+            print(f"  FAIL sanitize {name}: exception {e}")
+            failed += 1
+    return passed, failed
+
+
 def main():
     print("=== MLLANG Conformance Suite ===\n")
 
@@ -149,8 +316,11 @@ def main():
     m_pass, m_fail = run_markdown_extract_test()
     print(f"MARKDOWN tests:   {m_pass} passed, {m_fail} failed")
 
-    total_pass = p_pass + h_pass + r_pass + m_pass
-    total_fail = p_fail + h_fail + r_fail + m_fail
+    s_pass, s_fail = run_sanitize_tests()
+    print(f"SANITIZE tests:   {s_pass} passed, {s_fail} failed")
+
+    total_pass = p_pass + h_pass + r_pass + m_pass + s_pass
+    total_fail = p_fail + h_fail + r_fail + m_fail + s_fail
 
     print(f"\n--- TOTAL: {total_pass} passed, {total_fail} failed ---")
     sys.exit(0 if total_fail == 0 else 1)

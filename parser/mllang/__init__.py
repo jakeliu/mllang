@@ -16,6 +16,7 @@ from .packet import Packet, parse, compose, extract_from_markdown, validate
 from .slots import SLOT_ORDER, REQUIRED_SLOTS
 from .halt import HALT_ENUM
 from .operators import OPERATORS
+from .sanitize import sanitize, sanitize_to_json, VALID_LEVELS as TELEMETRY_LEVELS
 
 __version__ = "0.1.0"
 
@@ -25,6 +26,9 @@ __all__ = [
     "compose",
     "extract_from_markdown",
     "validate",
+    "sanitize",
+    "sanitize_to_json",
+    "TELEMETRY_LEVELS",
     "SLOT_ORDER",
     "REQUIRED_SLOTS",
     "HALT_ENUM",
