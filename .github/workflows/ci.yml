@@ -28,6 +28,19 @@ jobs:
       - name: Run conformance suite
         run: python conformance/run_conformance.py
 
+  mcp-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install with MCP extras
+        run: pip install -e 'parser/[mcp]'
+      - name: Run MCP end-to-end test
+        run: python conformance/test_mcp_server.py
+
   lint-spec:
     runs-on: ubuntu-latest
     steps:

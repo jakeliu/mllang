@@ -4,6 +4,22 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.3] — 2026-05-20
+
+### Added
+- **MCP server** (`mllang.mcp_server`). Exposes the library as 7 Model Context Protocol tools (`mllang_parse`, `mllang_compose`, `mllang_validate`, `mllang_embed_in_markdown`, `mllang_extract_summary`, `mllang_sanitize`, `mllang_spec`). Pluggable into Claude Desktop, Cline, Zed, or any MCP-aware client.
+- Optional dependency `[mcp]` extra: `pip install 'mllang-protocol[mcp]'`.
+- Console script `mllang-mcp-server` (stdio transport).
+- End-to-end test (`conformance/test_mcp_server.py`) — spawns the server as a subprocess and drives every tool over real MCP stdio. 22 assertions.
+- CI `mcp-e2e` job runs the end-to-end test on every push.
+- `docs/mcp.md` — install, Claude Desktop config snippet, tool table, end-to-end test instructions.
+- README — new MCP server section.
+
+### Note
+- Core install (`pip install mllang-protocol`) stays pure stdlib. The `mcp` SDK only loads when the server is invoked.
+
+---
+
 ## [0.1.2] — 2026-05-20
 
 ### Changed

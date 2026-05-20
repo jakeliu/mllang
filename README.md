@@ -163,6 +163,7 @@ pip install -e parser/
 - [Specification (v0.1 locked)](spec/MLLANG_v0.1.locked.md)
 - [Quickstart](docs/quickstart.md)
 - [Markdown-embedded usage](docs/markdown-embedded.md)
+- [MCP server](docs/mcp.md)
 - [Telemetry & privacy](docs/telemetry.md)
 - [FAQ](docs/faq.md)
 - [Conformance tests](conformance/)
@@ -174,6 +175,27 @@ pip install -e parser/
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Quarterly RFC review windows. Multi-vendor test required for any spec change.
+
+---
+
+## MCP server (Claude Desktop / Cline / Zed)
+
+```bash
+pip install 'mllang-protocol[mcp]'
+mllang-mcp-server
+```
+
+Or drop into `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "mllang": { "command": "mllang-mcp-server" }
+  }
+}
+```
+
+Exposes 7 tools (`mllang_parse` / `mllang_compose` / `mllang_validate` / `mllang_embed_in_markdown` / `mllang_extract_summary` / `mllang_sanitize` / `mllang_spec`). End-to-end test in `conformance/test_mcp_server.py` drives every tool over real MCP stdio. Full guide: [`docs/mcp.md`](docs/mcp.md).
 
 ---
 
