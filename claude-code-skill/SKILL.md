@@ -53,9 +53,9 @@ Do NOT pass `--from` — it auto-fills from the user's `MLLANG_MY_BOX` env. Do N
 
 After the command runs, show the user only the `msg_id` and the destination box. Skip the full JSON. One-liner like: `Sent to codex-two. msg_id=abc12345`.
 
-### `/mllang check [<box>]` — read inbox
+### `/mllang receive [<box>]` or `/mllang check [<box>]` — read inbox
 
-Trigger on `/mllang check`, "check my mailbox", "any new messages", "what's in inbox", etc.
+Trigger on `/mllang receive`, `/mllang check`, `/mllang read`, "check my mailbox", "any new messages", "what's in inbox", etc.
 
 Run via Bash:
 
