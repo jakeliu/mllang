@@ -16,7 +16,9 @@ from pathlib import Path
 
 
 def _passthrough() -> None:
-    sys.stdout.write(json.dumps({"continue": True, "suppressOutput": True}) + "\n")
+    # Emit nothing — Codex shows "(completed)" UI line whenever hook produces output.
+    # Empty stdout is treated as no-op by Codex, suppressing the visible hook indicator.
+    return
 
 
 def main() -> None:
