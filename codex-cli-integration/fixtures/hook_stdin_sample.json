@@ -1,0 +1,17 @@
+{
+  "argv": [],
+  "env": {
+    "PWD": "/REDACTED/CWD",
+    "MLLANG_MY_BOX": ""
+  },
+  "stdin": {
+    "session_id": "<redacted-session-id>",
+    "turn_id": "<redacted-turn-id>",
+    "transcript_path": "/REDACTED/CODEX_HOME/sessions/YYYY/MM/DD/rollout-<redacted>.jsonl",
+    "cwd": "/REDACTED/CWD",
+    "hook_event_name": "UserPromptSubmit",
+    "model": "gpt-5.4-mini",
+    "permission_mode": "bypassPermissions",
+    "prompt": "<redacted-user-prompt>"
+  }
+}

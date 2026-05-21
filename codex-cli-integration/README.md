@@ -2,7 +2,7 @@
 
 Conservative Path 1 for Codex CLI: parse Codex session JSONL, capture real per-turn token usage, and write local `shim-engine` records.
 
-This integration does **not** install hooks. Codex has hook machinery, but the user-facing hook schema and sub-agent payload are not fixture-backed yet. The stable surface for this release is:
+The base installer does **not** install hooks. Codex's stable telemetry surface is still:
 
 ```text
 ~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl
@@ -42,7 +42,7 @@ It also creates the log directory:
 ~/.codex/mllang-shim/
 ```
 
-It does not edit `~/.codex/config.toml` and does not install hooks.
+It does not edit `~/.codex/config.toml` and does not install hooks. Optional mailbox auto-surface wiring is documented below.
 
 ## Example 1: Parse The Latest Codex Session
 
@@ -98,6 +98,54 @@ Run a one-shot task and record the completed turn from streamed JSON events:
 
 The wrapper is optional. The `--latest` and `--watch` modes cover the same data after Codex writes its session file.
 
+## Optional: Mailbox Auto-Surface Hook
+
+Codex can run a `UserPromptSubmit` hook that polls `~/.mllang-mailbox/codex/inbox/` before each prompt and injects unread-message context into the next model turn.
+
+This uses the same mailbox polling script as the Claude Code skill, kept verbatim as `hook_preprompt.py`. Codex needs a tiny adapter because Claude Code's `systemMessage` hook output is only a warning in Codex; Codex model-visible context uses `hookSpecificOutput.additionalContext`.
+
+Copy scripts into the active Codex home:
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/mllang-integration/scripts"
+cp claude-code-skill/scripts/hook_preprompt.py \
+  "${CODEX_HOME:-$HOME/.codex}/mllang-integration/scripts/hook_preprompt.py"
+cp codex-cli-integration/scripts/hook_preprompt_codex_wrapper.py \
+  "${CODEX_HOME:-$HOME/.codex}/mllang-integration/scripts/hook_preprompt_codex_wrapper.py"
+chmod +x "${CODEX_HOME:-$HOME/.codex}/mllang-integration/scripts/"hook_preprompt*.py
+```
+
+Add this to the active Codex `config.toml`:
+
+```toml
+[[hooks.UserPromptSubmit]]
+matcher = ""
+
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "MLLANG_MY_BOX=codex python3 /full/path/to/hook_preprompt_codex_wrapper.py"
+```
+
+Restart Codex and open `/hooks`; trust the new `UserPromptSubmit` hook. Codex writes the trusted hash under `[hooks.state]`.
+
+Smoke test:
+
+```bash
+mllang-mailbox send codex "test the hook surfaces this" --from test --subject "auto-surface test"
+```
+
+On the next Codex prompt, the model should see a context entry like:
+
+```text
+[mllang-mailbox] 1 unread in box=codex
+```
+
+The captured Codex hook stdin schema is committed at:
+
+```text
+codex-cli-integration/fixtures/hook_stdin_sample.json
+```
+
 ## What Gets Logged
 
 `shim-engine` stores packet shape and metrics, not packet values. Each Codex row includes tags:
@@ -122,3 +170,5 @@ python3 codex-cli-integration/tests/test_session_parser.py
 ```
 
 The fixture is a redacted real Codex rollout. User prompts and local paths are replaced with placeholders before committing.
+
+Hook fixture note: `hook_stdin_sample.json` is also redacted. It preserves Codex's real `UserPromptSubmit` fields while replacing concrete local paths, session ids, turn ids, and user prompt text.
