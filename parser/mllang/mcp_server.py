@@ -163,6 +163,7 @@ import json as _json
 import os as _os
 
 _MAILBOX_ROOT = Path(_os.environ.get("MLLANG_MAILBOX_ROOT", str(Path.home() / ".mllang-mailbox")))
+_MY_BOX = _os.environ.get("MLLANG_MY_BOX", "me")
 
 
 def _box_dir(box: str, sub: str) -> Path:
@@ -176,7 +177,7 @@ def _box_dir(box: str, sub: str) -> Path:
 def mailbox_send(
     to: str,
     body: str,
-    from_: str = "me",
+    from_: str = "",
     subject: str = "",
     tags: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
@@ -185,8 +186,14 @@ def mailbox_send(
     Body can be any text — including an MLLANG packet. The recipient
     calls mailbox_check(box="<to>") to read.
 
+    `from_` defaults to the session's own box name (env var MLLANG_MY_BOX),
+    so the recipient can reply by addressing the from_ value as `to`. If
+    MLLANG_MY_BOX is not set, falls back to "me".
+
     Returns: {msg_id, path, ts, to, from_}.
     """
+    if not from_:
+        from_ = _os.environ.get("MLLANG_MY_BOX") or "me"
     ts = _time.strftime("%Y-%m-%dT%H:%M:%SZ", _time.gmtime())
     msg_id = _uuid.uuid4().hex[:12]
     payload = {
@@ -206,7 +213,7 @@ def mailbox_send(
 
 @mcp.tool()
 def mailbox_check(
-    box: str = "me",
+    box: str = "",
     unread_only: bool = True,
     since: str = "",
     mark_read: bool = True,
@@ -214,7 +221,8 @@ def mailbox_check(
     """Read messages from `box`'s inbox.
 
     Args:
-        box: which inbox to read (the agent's own name).
+        box: which inbox to read (the agent's own name). When empty,
+            falls back to the session's MLLANG_MY_BOX env var, then to "me".
         unread_only: when True (default), only return messages in /inbox/;
             when False, also include /read/.
         since: ISO timestamp filter — only messages with ts > since.
@@ -223,6 +231,8 @@ def mailbox_check(
 
     Returns: list of message dicts (msg_id, ts, from, to, subject, body, tags).
     """
+    if not box:
+        box = _os.environ.get("MLLANG_MY_BOX") or "me"
     inbox = _box_dir(box, "inbox")
     read_dir = _box_dir(box, "read")
     sources = [inbox] + ([read_dir] if not unread_only else [])
@@ -285,11 +295,21 @@ def mailbox_cli() -> None:
     sp_send = sub.add_parser("send", help="Send a message to <to>'s inbox")
     sp_send.add_argument("to")
     sp_send.add_argument("body")
-    sp_send.add_argument("--from", dest="from_", default="me")
+    sp_send.add_argument(
+        "--from",
+        dest="from_",
+        default="",
+        help="Sender box name. Defaults to MLLANG_MY_BOX env, then 'me'.",
+    )
     sp_send.add_argument("--subject", default="")
 
     sp_check = sub.add_parser("check", help="Read messages from <box>'s inbox")
-    sp_check.add_argument("box")
+    sp_check.add_argument(
+        "box",
+        nargs="?",
+        default="",
+        help="Box to read. Defaults to MLLANG_MY_BOX env, then 'me'.",
+    )
     sp_check.add_argument("--all", action="store_true", help="Include already-read")
     sp_check.add_argument("--keep-unread", action="store_true", help="Don't mark as read")
 

@@ -4,6 +4,22 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.10] — 2026-05-20
+
+### Changed — mailbox now auto-uses session's own box name
+- `mailbox_send` — `from_` now defaults to `MLLANG_MY_BOX` env var (falling back to `"me"`). Previously defaulted to literal `"me"`, which forced agents to remember to set their own name on every send.
+- `mailbox_check` — `box` parameter now defaults to `MLLANG_MY_BOX` env var (falling back to `"me"`). `mailbox_check()` with no args now reads "my own inbox" instead of requiring the box name every time.
+- CLI mirrors the same defaults: `mllang-mailbox send <to> "body"` (no `--from` needed) and `mllang-mailbox check` (no box arg needed) both pick up `MLLANG_MY_BOX`.
+
+### Why
+- Box-name mismatch bug found in production: Codex profile `two` had its hook hardcoded as `MLLANG_MY_BOX=codex`, so messages addressed `to=codex-two` were never surfaced. Same on the Claude Code side — default `MLLANG_MY_BOX=claude` missed `claude-jake`-addressed mail.
+- Convention going forward: each session sets `MLLANG_MY_BOX=<my-name>` once (in shell rc or in the hook command), and from then on `send` / `check` Just Work. Receiver gets the sender's name auto-attached, so reply targeting is also trivial.
+
+### Note — bug surfaced earlier but not breaking
+- `mailbox_send` calls in v0.1.8 / v0.1.9 with explicit `from_="me"` still work identically. This is a default change, not an API break.
+
+---
+
 ## [0.1.9] — 2026-05-20
 
 ### Added — auto-surface unread mailbox messages
