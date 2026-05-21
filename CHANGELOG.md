@@ -4,6 +4,27 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.1.11] — 2026-05-20
+
+### Added — real desktop push notification on `mailbox_send`
+- Whenever `mailbox_send` writes a new message file, the server also fires a native desktop notification on the local machine:
+  - macOS: `osascript -e 'display notification ... with title "mllang: new mail for <to>" sound name "Glass"'`
+  - Linux: `notify-send` (when installed)
+  - Other platforms: silent fallback, no error.
+- Opt-out via env: `MLLANG_NOTIFY=off`.
+- Best-effort and non-blocking: a missing `osascript` / `notify-send` is swallowed silently so mail delivery never fails because the banner couldn't render.
+- Closes the "feels like polling" gap when both CLIs share a machine — recipient sees a banner the instant a message lands, regardless of which terminal is focused. Hook-based prompt-time surfacing still acts as the in-CLI fallback for sessions that missed the banner.
+
+### Why
+- MCP server-pushed notifications are silently dropped by Codex CLI's UX path (verified earlier in `CODEX_MCP_NOTIFICATIONS_RESEARCH_RESULTS.md`).
+- Hook-based surfacing only fires on the next prompt, not when mail actually arrives.
+- OS-level banner is the only true push path that works for both CLIs simultaneously since both sessions are on the same host.
+
+### Note
+- Network-level / cross-machine push is out of scope for this release (would need a sync layer on top of `~/.mllang-mailbox/`). For now: same machine, real push.
+
+---
+
 ## [0.1.10] — 2026-05-20
 
 ### Changed — mailbox now auto-uses session's own box name

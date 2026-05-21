@@ -164,6 +164,49 @@ import os as _os
 
 _MAILBOX_ROOT = Path(_os.environ.get("MLLANG_MAILBOX_ROOT", str(Path.home() / ".mllang-mailbox")))
 _MY_BOX = _os.environ.get("MLLANG_MY_BOX", "me")
+_NOTIFY_MODE = _os.environ.get("MLLANG_NOTIFY", "desktop").lower()  # desktop | off
+
+
+def _notify_desktop(to: str, from_: str, subject: str) -> None:
+    """Best-effort desktop notification on the local machine. Silent fallthrough on any error
+    (notifications are a UX bonus; never block mail delivery on a missing command).
+    """
+    if _NOTIFY_MODE == "off":
+        return
+    import platform
+    import shlex
+    import subprocess as _sp
+
+    title = f"mllang: new mail for {to}"
+    body = f"from {from_}" + (f": {subject}" if subject else "")
+
+    system = platform.system()
+    try:
+        if system == "Darwin":
+            # macOS: osascript banner. Escape double quotes in user fields.
+            safe_body = body.replace('"', '\\"')
+            safe_title = title.replace('"', '\\"')
+            _sp.run(
+                [
+                    "osascript",
+                    "-e",
+                    f'display notification "{safe_body}" with title "{safe_title}" sound name "Glass"',
+                ],
+                check=False,
+                timeout=2,
+                capture_output=True,
+            )
+        elif system == "Linux":
+            # Linux: notify-send if installed
+            _sp.run(
+                ["notify-send", "--app-name=mllang", title, body],
+                check=False,
+                timeout=2,
+                capture_output=True,
+            )
+        # Windows / other: skip — no consistent native banner without extra deps
+    except (FileNotFoundError, _sp.SubprocessError, OSError):
+        pass
 
 
 def _box_dir(box: str, sub: str) -> Path:
@@ -208,6 +251,7 @@ def mailbox_send(
     fname = f"{ts.replace(':', '-')}-{msg_id}.json"
     path = _box_dir(to, "inbox") / fname
     path.write_text(_json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    _notify_desktop(to, from_, subject)
     return {"msg_id": msg_id, "path": str(path), "ts": ts, "to": to, "from_": from_}
 
 
