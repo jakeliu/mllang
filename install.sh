@@ -23,12 +23,14 @@ set -euo pipefail
 
 MY_BOX=""
 DRY_RUN=0
+ONLY=""    # "" (both) | "claude" | "codex"
 REPO_RAW="https://raw.githubusercontent.com/jakeliu/mllang/main"
 TS=$(date +%Y%m%d_%H%M%S)
 
 for arg in "$@"; do
     case "$arg" in
         --my-box=*) MY_BOX="${arg#*=}" ;;
+        --only=*)   ONLY="${arg#*=}" ;;
         --dry-run)  DRY_RUN=1 ;;
         --help)
             head -25 "$0" | sed -n '3,25p' | sed 's/^# //; s/^#//'
@@ -97,6 +99,10 @@ for d in "$HOME/.claude-$(whoami)" "$HOME/.claude-jake" "$HOME/.claude"; do
 done
 
 [[ -d "$HOME/.codex" ]] && HAS_CODEX=1
+
+# --only flag honors user choice over auto-detect
+if [[ "$ONLY" == "claude" ]]; then HAS_CODEX=0; fi
+if [[ "$ONLY" == "codex" ]];  then HAS_CLAUDE_CODE=0; fi
 
 [[ $HAS_CLAUDE_CODE -eq 1 ]] && log "found Claude Code at $CLAUDE_DIR"
 [[ $HAS_CODEX -eq 1 ]] && log "found Codex CLI at $HOME/.codex"
