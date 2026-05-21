@@ -12,6 +12,10 @@ hooks:
     - hooks:
         - type: command
           command: "python3 ${CLAUDE_SKILL_DIR}/scripts/hook_preprompt.py"
+  PreToolUse:
+    - hooks:
+        - type: command
+          command: "python3 ${CLAUDE_SKILL_DIR}/scripts/hook_preprompt.py"
 ---
 
 # MLLANG skill

@@ -1,27 +1,18 @@
 #!/usr/bin/env python3
-"""UserPromptSubmit hook — auto-surface unread mailbox messages.
+"""UserPromptSubmit + PreToolUse hook — auto-surface unread mailbox messages.
 
-Fires before every user prompt in Claude Code. Polls the active session's
-mailbox (default box=`claude`, override via $MLLANG_MY_BOX) and, if any
-messages are unread, emits a system reminder so the model surfaces them
-to the user immediately. No push from the MCP server is required — this
-is deterministic prompt-time polling.
-
-Hook wiring in SKILL.md frontmatter:
-
-    hooks:
-      UserPromptSubmit:
-        - hooks:
-          - type: command
-            command: "python3 ${CLAUDE_SKILL_DIR}/scripts/hook_preprompt.py"
+Fires on every user prompt AND before every tool call in Claude Code (or
+Codex via the wrapper). Polls the active session's mailbox (default box
+=`claude`, override via $MLLANG_MY_BOX) and surfaces ONLY messages whose
+msg_id has not been seen yet this session. Tracks seen IDs in
+~/.mllang-mailbox/.seen/<box>-<pid-ancestor>.json so PreToolUse firing 10x
+per turn doesn't re-surface the same unread 10x.
 
 Output contract:
-- stdout: JSON {"continue": true, "suppressOutput": true} (pass-through; never block the user)
-- stderr (when unread > 0): a one-line system reminder that Claude Code surfaces to the model
+- stdout: JSON {"continue": true, "suppressOutput": true [, "systemMessage": ...]}
+- Pass-through on any error.
 
-The hook is intentionally fail-soft. Mailbox directory missing, malformed
-JSON, permission errors — all degrade to a clean pass-through, never
-block the user's prompt.
+Fail-soft on every I/O step. Never blocks the user.
 """
 
 from __future__ import annotations
@@ -33,6 +24,7 @@ from pathlib import Path
 
 DEFAULT_BOX = os.environ.get("MLLANG_MY_BOX", "claude")
 MAILBOX_ROOT = Path(os.environ.get("MLLANG_MAILBOX_ROOT", str(Path.home() / ".mllang-mailbox")))
+SEEN_DIR = MAILBOX_ROOT / ".seen"
 
 
 def _emit_passthrough(reminder: str = "") -> None:
@@ -58,11 +50,28 @@ def _read_unread(box: str) -> list:
     return messages
 
 
+def _seen_path(box: str) -> Path:
+    """Per-session seen-ids file. PPID groups all hook fires within one CLI run."""
+    return SEEN_DIR / f"{box}-{os.getppid()}.json"
+
+
+def _load_seen(box: str) -> set:
+    try:
+        return set(json.loads(_seen_path(box).read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        return set()
+
+
+def _save_seen(box: str, seen: set) -> None:
+    try:
+        SEEN_DIR.mkdir(parents=True, exist_ok=True)
+        _seen_path(box).write_text(json.dumps(sorted(seen)), encoding="utf-8")
+    except OSError:
+        pass
+
+
 def main() -> None:
     try:
-        # Read hook payload from stdin — Claude Code passes it as JSON.
-        # We don't actually need its fields here, but consume it to avoid
-        # SIGPIPE if Claude Code expects us to read.
         try:
             _ = sys.stdin.read()
         except Exception:
@@ -74,24 +83,37 @@ def main() -> None:
             _emit_passthrough()
             return
 
-        # Build a tight one-line summary, then optionally enumerate up to 3.
-        n = len(unread)
+        seen = _load_seen(box)
+        new = [m for m in unread if m.get("msg_id") not in seen]
+        if not new:
+            # Same unread still sitting there; already surfaced this run.
+            _emit_passthrough()
+            return
+
+        n = len(new)
         summaries = []
-        for msg in unread[:3]:
+        for msg in new[:3]:
             frm = msg.get("from", "?")
             subj = (msg.get("subject") or "")[:40]
             mid = msg.get("msg_id", "?")[:8]
             summaries.append(f"  - from={frm} subj={subj!r} id={mid}")
         extra = f"  (+ {n - 3} more)" if n > 3 else ""
         body = (
-            f"[mllang-mailbox] {n} unread in box={box}:\n"
+            f"[mllang-mailbox] {n} NEW unread in box={box}:\n"
             + "\n".join(summaries)
             + ("\n" + extra if extra else "")
             + f"\n  Call mailbox_check(box={box!r}) to read."
         )
+
+        # Record everything we just surfaced so we don't repeat.
+        for m in new:
+            mid = m.get("msg_id")
+            if mid:
+                seen.add(mid)
+        _save_seen(box, seen)
+
         _emit_passthrough(body)
     except Exception:
-        # Never block the user prompt on a hook error.
         _emit_passthrough()
 
 
