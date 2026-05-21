@@ -228,7 +228,9 @@ if ($HasCodex) {
             }
             if ($needHook) {
                 $wrapper = "$codexInt\hook_preprompt_codex_wrapper.py".Replace('\','/')
-                $addLines += "`n[[hooks.UserPromptSubmit]]`nmatcher = `"`"`n`n[[hooks.UserPromptSubmit.hooks]]`ntype = `"command`"`ncommand = `"MLLANG_MY_BOX=$boxName python `"$wrapper`"`"`n"
+                # Use TOML single-quoted string to avoid nested double-quote issues
+                $sq = "'"
+                $addLines += "`n[[hooks.UserPromptSubmit]]`nmatcher = `"`"`n`n[[hooks.UserPromptSubmit.hooks]]`ntype = `"command`"`ncommand = ${sq}MLLANG_MY_BOX=$boxName python `"$wrapper`"${sq}`n"
             }
             if (-not $DryRun) {
                 Add-Content -Path $codexCfg -Value $addLines -Encoding UTF8
