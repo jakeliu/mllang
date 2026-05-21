@@ -54,6 +54,8 @@ if (-not (Get-Command pipx -ErrorAction SilentlyContinue)) {
     else {
         python -m pip install --user pipx 2>&1 | Out-Null
         python -m pipx ensurepath 2>&1 | Out-Null
+        # Refresh PATH so pipx is available in this session
+        $env:PATH = [Environment]::GetEnvironmentVariable("PATH","User") + ";" + [Environment]::GetEnvironmentVariable("PATH","Machine")
     }
 }
 
@@ -78,26 +80,26 @@ Ok "mllang-mcp-server at $McpBin"
 
 # ── 2. Detect clients ───────────────────────────────────────────────────
 
-$Home = $env:USERPROFILE
+$HomeDir = $env:USERPROFILE
 $HasClaude = $false
 $HasCodex  = $false
 $ClaudeDir = ""
 
-foreach ($candidate in @("$Home\.claude-$env:USERNAME", "$Home\.claude-jake", "$Home\.claude")) {
-    if ((Test-Path $candidate) -and (Test-Path "$candidate\commands")) {
+foreach ($candidate in @("$HomeDir\.claude-$env:USERNAME", "$HomeDir\.claude")) {
+    if ((Test-Path $candidate) -and ((Test-Path "$candidate\settings.json") -or (Test-Path "$candidate\commands"))) {
         $ClaudeDir = $candidate
         $HasClaude = $true
         break
     }
 }
 
-if (Test-Path "$Home\.codex") { $HasCodex = $true }
+if (Test-Path "$HomeDir\.codex") { $HasCodex = $true }
 
 if ($Only -eq "claude") { $HasCodex  = $false }
 if ($Only -eq "codex")  { $HasClaude = $false }
 
 if ($HasClaude) { Log "found Claude Code at $ClaudeDir" }
-if ($HasCodex)  { Log "found Codex CLI at $Home\.codex" }
+if ($HasCodex)  { Log "found Codex CLI at $HomeDir\.codex" }
 
 if (-not $HasClaude -and -not $HasCodex) {
     Warn "Neither Claude Code nor Codex CLI detected. CLI installed; skipping client wiring."
@@ -105,7 +107,7 @@ if (-not $HasClaude -and -not $HasCodex) {
 }
 
 # Mailbox dir
-New-Item -ItemType Directory -Force -Path "$Home\.mllang-mailbox" | Out-Null
+New-Item -ItemType Directory -Force -Path "$HomeDir\.mllang-mailbox" | Out-Null
 
 # ── 3. Claude Code wiring ───────────────────────────────────────────────
 
@@ -146,7 +148,27 @@ if ($HasClaude) {
     $settings = "$ClaudeDir\settings.json"
     if (Test-Path $settings) {
         Backup-File $settings
-        $cfg = Get-Content $settings -Raw | ConvertFrom-Json -AsHashtable
+        $raw = Get-Content $settings -Raw
+        # ConvertFrom-Json -AsHashtable requires PS 7+; fall back for PS 5.1
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            $cfg = $raw | ConvertFrom-Json -AsHashtable
+        } else {
+            # Parse as PSObject then convert to nested hashtable
+            function ConvertTo-Hashtable($obj) {
+                if ($obj -is [System.Management.Automation.PSCustomObject]) {
+                    $ht = @{}
+                    foreach ($p in $obj.PSObject.Properties) {
+                        $ht[$p.Name] = ConvertTo-Hashtable $p.Value
+                    }
+                    return $ht
+                } elseif ($obj -is [System.Collections.IEnumerable] -and $obj -isnot [string]) {
+                    return @($obj | ForEach-Object { ConvertTo-Hashtable $_ })
+                } else {
+                    return $obj
+                }
+            }
+            $cfg = ConvertTo-Hashtable ($raw | ConvertFrom-Json)
+        }
         if (-not $cfg.hooks) { $cfg.hooks = @{} }
         $hookScript    = "$skillDir\scripts\hook_preprompt.py".Replace('\','/')
         $postagentCmd  = "$skillDir\scripts\hook_postagent.py".Replace('\','/')
@@ -177,10 +199,10 @@ if ($HasClaude) {
 # ── 4. Codex CLI wiring ─────────────────────────────────────────────────
 
 if ($HasCodex) {
-    Log "wiring Codex CLI at $Home\.codex"
-    $codexCfg = "$Home\.codex\config.toml"
-    $codexAgents = "$Home\.codex\AGENTS.md"
-    $codexInt = "$Home\.codex\mllang-integration\scripts"
+    Log "wiring Codex CLI at $HomeDir\.codex"
+    $codexCfg = "$HomeDir\.codex\config.toml"
+    $codexAgents = "$HomeDir\.codex\AGENTS.md"
+    $codexInt = "$HomeDir\.codex\mllang-integration\scripts"
     New-Item -ItemType Directory -Force -Path $codexInt | Out-Null
 
     # 4a. Hook scripts
