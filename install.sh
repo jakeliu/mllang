@@ -193,6 +193,12 @@ if [[ $HAS_CODEX -eq 1 ]]; then
     do_or_say "curl -sL $REPO_RAW/claude-code-skill/scripts/hook_preprompt.py > $HOME/.codex/mllang-integration/scripts/hook_preprompt.py"
     do_or_say "chmod +x $HOME/.codex/mllang-integration/scripts/*.py"
 
+    # 5d. [[hooks.UserPromptSubmit]] in config.toml so auto-surface fires
+    if [[ -f "$CODEX_CFG" ]] && ! grep -q "hook_preprompt_codex_wrapper.py" "$CODEX_CFG"; then
+        BOX_NAME="${MY_BOX:-codex}"
+        do_or_say "printf '\n[[hooks.UserPromptSubmit]]\nmatcher = \"\"\n\n[[hooks.UserPromptSubmit.hooks]]\ntype = \"command\"\ncommand = \"MLLANG_MY_BOX=%s python3 %s/.codex/mllang-integration/scripts/hook_preprompt_codex_wrapper.py\"\n' \"$BOX_NAME\" \"$HOME\" >> $CODEX_CFG"
+    fi
+
     ok "Codex CLI wired (main profile). For other profiles, repeat manually with config.toml."
 fi
 
