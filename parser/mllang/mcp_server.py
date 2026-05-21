@@ -204,7 +204,29 @@ def _notify_desktop(to: str, from_: str, subject: str) -> None:
                 timeout=2,
                 capture_output=True,
             )
-        # Windows / other: skip — no consistent native banner without extra deps
+        elif system == "Windows":
+            # Windows 10+: native UWP toast via PowerShell. Falls back silent if
+            # PowerShell isn't on PATH (rare) or the WinRT class lookup fails.
+            safe_title = title.replace('"', "'").replace("`", "'")
+            safe_body = body.replace('"', "'").replace("`", "'")
+            ps_cmd = (
+                "[Windows.UI.Notifications.ToastNotificationManager, "
+                "Windows.UI.Notifications, ContentType=WindowsRuntime] | Out-Null;"
+                "$t = [Windows.UI.Notifications.ToastNotificationManager]"
+                "::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02);"
+                "$n = $t.GetElementsByTagName('text');"
+                f'$n[0].AppendChild($t.CreateTextNode("{safe_title}")) | Out-Null;'
+                f'$n[1].AppendChild($t.CreateTextNode("{safe_body}")) | Out-Null;'
+                "$toast = [Windows.UI.Notifications.ToastNotification]::new($t);"
+                "[Windows.UI.Notifications.ToastNotificationManager]"
+                "::CreateToastNotifier('mllang').Show($toast)"
+            )
+            _sp.run(
+                ["powershell", "-NoProfile", "-Command", ps_cmd],
+                check=False,
+                timeout=3,
+                capture_output=True,
+            )
     except (FileNotFoundError, _sp.SubprocessError, OSError):
         pass
 
