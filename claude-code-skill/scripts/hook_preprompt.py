@@ -50,30 +50,36 @@ def _read_unread(box: str) -> list:
     return messages
 
 
-def _seen_path(box: str) -> Path:
-    """Per-session seen-ids file. PPID groups all hook fires within one CLI run."""
-    return SEEN_DIR / f"{box}-{os.getppid()}.json"
+def _seen_path(box: str, session_id: str = "") -> Path:
+    """Per-session seen-ids file. session_id from hook payload preferred; PPID fallback."""
+    key = session_id or str(os.getppid())
+    return SEEN_DIR / f"{box}-{key}.json"
 
 
-def _load_seen(box: str) -> set:
+def _load_seen(box: str, session_id: str = "") -> set:
     try:
-        return set(json.loads(_seen_path(box).read_text(encoding="utf-8")))
+        return set(json.loads(_seen_path(box, session_id).read_text(encoding="utf-8")))
     except (OSError, ValueError):
         return set()
 
 
-def _save_seen(box: str, seen: set) -> None:
+def _save_seen(box: str, seen: set, session_id: str = "") -> None:
     try:
         SEEN_DIR.mkdir(parents=True, exist_ok=True)
-        _seen_path(box).write_text(json.dumps(sorted(seen)), encoding="utf-8")
+        _seen_path(box, session_id).write_text(json.dumps(sorted(seen)), encoding="utf-8")
     except OSError:
         pass
 
 
 def main() -> None:
     try:
+        # Read hook payload; extract session_id if Claude Code / Codex passed one.
+        session_id = ""
         try:
-            _ = sys.stdin.read()
+            raw = sys.stdin.read()
+            if raw.strip():
+                payload = json.loads(raw)
+                session_id = str(payload.get("session_id", "") or "")
         except Exception:
             pass
 
@@ -83,34 +89,23 @@ def main() -> None:
             _emit_passthrough()
             return
 
-        seen = _load_seen(box)
+        seen = _load_seen(box, session_id)
         new = [m for m in unread if m.get("msg_id") not in seen]
         if not new:
-            # Same unread still sitting there; already surfaced this run.
+            # Same unread still sitting there; already surfaced this session.
             _emit_passthrough()
             return
 
         n = len(new)
-        summaries = []
-        for msg in new[:3]:
-            frm = msg.get("from", "?")
-            subj = (msg.get("subject") or "")[:40]
-            mid = msg.get("msg_id", "?")[:8]
-            summaries.append(f"  - from={frm} subj={subj!r} id={mid}")
-        extra = f"  (+ {n - 3} more)" if n > 3 else ""
-        body = (
-            f"[mllang-mailbox] {n} NEW unread in box={box}:\n"
-            + "\n".join(summaries)
-            + ("\n" + extra if extra else "")
-            + f"\n  Call mailbox_check(box={box!r}) to read."
-        )
+        froms = sorted({msg.get("from", "?") for msg in new})
+        body = f"📬 {n} new from {', '.join(froms)}"
 
         # Record everything we just surfaced so we don't repeat.
         for m in new:
             mid = m.get("msg_id")
             if mid:
                 seen.add(mid)
-        _save_seen(box, seen)
+        _save_seen(box, seen, session_id)
 
         _emit_passthrough(body)
     except Exception:
