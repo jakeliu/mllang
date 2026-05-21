@@ -39,6 +39,33 @@ D:[ready_to_route]; N:@H -> proceed; H:<=>; P:<honest float>;
 EN: MLLANG v0.1 spec acknowledged for this Claude Code session.
 ```
 
+### `/mllang send <box> <message>` — also fires for natural language
+
+Trigger this when the user types `/mllang send codex-two hi` OR uses natural language like "send X to <box>", "tell <box> Y", "message <box> Z", "mailbox send X to Y", etc.
+
+Run via Bash (`mllang-mailbox` resolves to `/Users/jake/.local/bin/mllang-mailbox`):
+
+```bash
+mllang-mailbox send <box> "<message>"
+```
+
+Do NOT pass `--from` — it auto-fills from the user's `MLLANG_MY_BOX` env. Do NOT pass `--subject` unless the user supplied one explicitly.
+
+After the command runs, show the user only the `msg_id` and the destination box. Skip the full JSON. One-liner like: `Sent to codex-two. msg_id=abc12345`.
+
+### `/mllang check [<box>]` — read inbox
+
+Trigger on `/mllang check`, "check my mailbox", "any new messages", "what's in inbox", etc.
+
+Run via Bash:
+
+```bash
+mllang-mailbox check <box>     # if user specified a box
+mllang-mailbox check           # if not — defaults to MLLANG_MY_BOX
+```
+
+Summarize the returned JSON: `N messages. From <senders>. Subjects: <list>.` Show body text only if the user asked to read a specific message.
+
 ### `/mllang load <role>`
 
 `<role>` is one of: `orchestrator`, `critic`, `implementer`, `synthesizer`. Read `${CLAUDE_SKILL_DIR}/roles/<role>.md` and adopt that role's output conventions for subsequent messages. If the role file is missing, tell the user to re-run the install script: `bash ${CLAUDE_SKILL_DIR}/install.sh`.
