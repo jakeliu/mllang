@@ -1,6 +1,7 @@
 ---
 name: mllang
 description: Load MLLANG v0.1 protocol so this Claude Code session emits compact agent-state packets, and check live how many tokens / dollars MLLANG saved this session via shim-engine. Invoke when the user types /mllang or asks about MLLANG packets, agent-state protocol, or token-savings reports.
+trigger: /mllang
 allowed-tools: Bash, Read
 hooks:
   PostToolUse:
