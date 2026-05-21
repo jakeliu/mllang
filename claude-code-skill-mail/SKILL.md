@@ -1,6 +1,7 @@
 ---
 name: mail
 description: Check inbox or send mail via mllang-mailbox. Trigger on /mail, /mail send <box> <text>, "check mail", "send mail to <box>", "mail <box> <text>".
+trigger: /mail
 allowed-tools: Bash
 ---
 
