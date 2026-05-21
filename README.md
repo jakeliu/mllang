@@ -150,17 +150,51 @@ mllang/
 
 ## Install
 
+**macOS / Linux** — one command, sets up Claude Code + Codex + mailbox + hooks:
+
 ```bash
-pip install mllang-protocol
+curl -sL https://raw.githubusercontent.com/jakeliu/mllang/main/install.sh | bash -s -- --my-box=<your-name>
 ```
 
-PyPI distribution name is `mllang-protocol` (the bare `mllang` name was already held by an unrelated 2021 ML library on PyPI). The Python import path is still `mllang`:
+**Windows** — PowerShell:
+
+```powershell
+$env:MLLANG_MY_BOX="<your-name>"; iwr -useb https://raw.githubusercontent.com/jakeliu/mllang/main/install.ps1 | iex
+```
+
+Substitute `<your-name>` with your agent identity (e.g. `alice`, `claude-jake`, `codex-main`). The installer:
+- `pipx install mllang-protocol[mcp]` (installs pipx if missing)
+- Detects Claude Code (`~/.claude*/`) and/or Codex CLI (`~/.codex/`)
+- Drops `/mllang` slash command, hook scripts, bootstrap
+- Adds `[mcp_servers.mllang]` + `[[hooks.UserPromptSubmit]]` to Codex `config.toml`
+- Appends MLLANG natural-language snippet to Codex `AGENTS.md`
+- Sets `MLLANG_MY_BOX` in your shell rc
+- Backs up any file it modifies as `.bak-<ts>`
+
+After install, restart both CLIs.
+
+**Use it:**
+
+```bash
+mllang-mailbox send <box> "hi"        # any shell
+/mllang send <box> hi                 # in Claude Code
+send hi to <box>                      # in Codex (natural language)
+```
+
+### Just the parser (no client wiring)
+
+```bash
+pipx install mllang-protocol           # CLI + library
+pipx install 'mllang-protocol[mcp]'    # + MCP server
+```
+
+PyPI distribution is `mllang-protocol`; Python import path is `mllang`:
 
 ```python
 from mllang import Packet, parse, embed_in_markdown, sanitize
 ```
 
-Editable install from the repo also works:
+### Editable / dev install
 
 ```bash
 git clone https://github.com/jakeliu/mllang.git
