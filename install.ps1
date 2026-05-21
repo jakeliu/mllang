@@ -25,6 +25,11 @@ param(
     [switch]$DryRun
 )
 
+# Pipe-install fallback: when invoked via `iwr ... | iex`, -MyBox can't be
+# passed. Users run `$env:MLLANG_MY_BOX="x"; iwr ... | iex` instead.
+if (-not $MyBox -and $env:MLLANG_MY_BOX) { $MyBox = $env:MLLANG_MY_BOX }
+if (-not $Only -and $env:MLLANG_INSTALL_ONLY) { $Only = $env:MLLANG_INSTALL_ONLY }
+
 $ErrorActionPreference = "Continue"
 $RepoRaw = "https://raw.githubusercontent.com/jakeliu/mllang/main"
 $Ts = Get-Date -Format "yyyyMMdd_HHmmss"
