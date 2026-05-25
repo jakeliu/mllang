@@ -1,0 +1,1 @@
+V:0.2.r1; I:vote-cn-001; G:{rfc:"0001"}; N:{agent:"@CN", verb:"rfc.vote"}; H:done; P:0.95; O:{ok:true, vote:approve, comment:"The backward-compatible capability slots and standard error registry greatly enhance agent interop."};

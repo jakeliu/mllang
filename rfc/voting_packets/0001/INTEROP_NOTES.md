@@ -25,6 +25,31 @@
 - Both follow-up packets executed end-to-end through `@ML_CLF` harness (`label:spam`, TR preserved)
 - Verdict: open-weight family supports MLLANG v0.2 without modification. Local-only inference is fully viable — zero cloud dependency for the protocol layer.
 
+## Chinese vendors ✓ (4 confirmed)
+
+Tested via copy-paste prompt into each vendor's chat UI, 2026-05-24 → 2026-05-25:
+
+| Vendor / Model | Vote | Map-form N: | TR preserved | Round-trip |
+|---|---|---|---|---|
+| DeepSeek-V3 | approve | first try | ✓ | end-to-end label:spam |
+| Kimi K2.6 | approve | first try | ✓ | end-to-end label:spam |
+| Qwen-3.6 | approve | first try | ✓ | end-to-end label:spam |
+| GLM-5.1 | approve | first try | ✓ | end-to-end label:spam |
+
+### Identity-confusion quirk (GLM-5.1)
+- GLM-5.1's web UI clearly labels the session as "GLM-5.1", but the model self-reports `MODEL: Google Gemini 2.5 Pro` when asked.
+- Likely cause: training-data leak or RLHF distillation from Gemini outputs.
+- **Protocol impact: none.** The `@AGENT` token in MLLANG packets is supplied by the caller, not derived from model self-belief. Identity must come from external attestation (signature / network identity / OAuth), which is exactly what the `SIG:` slot is for.
+- Audit guidance for downstream implementers: never trust model self-identification when assigning packet agent tokens.
+
 ## Overall
 
-2 of 4 vendor families fully round-trip without manual intervention (Anthropic, OpenAI). 1 of 4 partially (Google; vote intent extractable, N: target needs scrub). 1 pending (open-weight).
+**5 of 5 vendor families round-trip v0.2 cleanly when map-form `N:` is used.** Verified across 9 model variants:
+
+- Anthropic: Claude Opus 4.7
+- OpenAI: Codex (gpt-5.5)
+- Google: Gemini 2.5 Pro (arrow form mangled, map-form clean)
+- Open-weight: Gemma 4-e4b, gemma-4-26b-a4b-it
+- Chinese: DeepSeek-V3, Kimi K2.6, Qwen-3.6, GLM-5.1
+
+Single recommendation for cross-vendor implementations: **prefer the map-form `N:{agent:"@X", verb:"y"}` encoding** to avoid the Gemini-class tokenizer rewrites. Arrow form remains supported for legacy v0.1 compatibility.
