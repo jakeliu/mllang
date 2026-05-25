@@ -85,11 +85,15 @@ MLLANG composes with existing standards rather than replacing them:
 
 MLLANG sits inside MCP/A2A as payload, inside markdown files as runtime state. Doesn't compete with them.
 
-### Relationship to RecursiveMAS
+### Credit / inspiration — RecursiveMAS
 
-[RecursiveMAS](https://github.com/RecursiveMAS/RecursiveMAS) (arXiv 2604.25917) solves multi-agent collaboration by exchanging **latent vectors** between recursive agent rounds — elegant when you control the model weights, but it requires direct activation access (Qwen / Llama / Gemma / DeepSeek self-hosted) and cannot drive closed APIs like Claude / GPT / Gemini.
+**The core idea of MLLANG is inspired by [RecursiveMAS / RecursiveLink](https://github.com/RecursiveMAS/RecursiveMAS) (arXiv 2604.25917).** Full credit to that team — they solved multi-agent collaboration by exchanging **latent vectors** between recursive agent rounds, which is the elegant solution when you control the model weights.
+
+Their constraint: it requires direct activation access (Qwen / Llama / Gemma / DeepSeek self-hosted). Closed APIs like Claude / GPT / Gemini don't expose hidden states, so latent exchange can't reach them.
 
 MLLANG is the **text-surface approximation** of the same goal. Loses the latent-recursion benefit. Gains universal compatibility — runs everywhere RecursiveMAS can't (closed APIs, mixed-vendor loops, paste-based workflows). A team running RecursiveMAS internally can still emit MLLANG packets as the text log of their latent rounds. Orthogonal layers; not competing.
+
+If you can run RecursiveMAS, prefer it. MLLANG exists for the rooms where you can't.
 
 ---
 

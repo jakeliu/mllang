@@ -1,8 +1,8 @@
 # MLLANG v0.2 — LOCKED
 
-Status: **LOCKED** 2026-05-24. Ratified by 4 of 5 jury seats.
+Status: **LOCKED** 2026-05-24. Round-trip clean on 9 model instances across 5 LLM families.
 
-Mean ratification confidence: 0.95. Vote tally: 4 approve / 0 reject / 1 pending (Maintainer 2).
+**Inspiration credit:** the core idea (multi-agent state exchange) is inspired by [RecursiveMAS](https://github.com/RecursiveMAS/RecursiveMAS) (arXiv 2604.25917). RecursiveMAS exchanges latent vectors between agents; MLLANG is the text-surface approximation that works for closed APIs where latent access is not available. Full credit to the RecursiveMAS team for the underlying multi-agent recursion idea.
 
 ASCII-only. Tokenizer-stable across Claude / GPT / Gemini / Codex / Gemma.
 

@@ -1,5 +1,11 @@
 # Inter-vendor MLLANG round-trip notes — 2026-05-24
 
+Each section below records what happened when a model was asked to compose a
+v0.2 packet. Not a vendor endorsement — just whether the protocol survives
+the model. Comments are the model's own first-try output.
+
+
+
 ## Codex (OpenAI gpt-5.5) ✓
 - Composed RFC vote packet correctly on first try (clean `@CODEX -> rfc.vote` target).
 - Composed follow-up `@ML_CLF -> clf.predict` packet correctly on first try.
@@ -44,7 +50,7 @@ Tested via copy-paste prompt into each vendor's chat UI, 2026-05-24 → 2026-05-
 
 ## Overall
 
-**5 of 5 vendor families round-trip v0.2 cleanly when map-form `N:` is used.** Verified across 9 model variants:
+9 model instances tried, all round-trip cleanly when map-form `N:` is used. 5 families:
 
 - Anthropic: Claude Opus 4.7
 - OpenAI: Codex (gpt-5.5)
@@ -52,4 +58,4 @@ Tested via copy-paste prompt into each vendor's chat UI, 2026-05-24 → 2026-05-
 - Open-weight: Gemma 4-e4b, gemma-4-26b-a4b-it
 - Chinese: DeepSeek-V3, Kimi K2.6, Qwen-3.6, GLM-5.1
 
-Single recommendation for cross-vendor implementations: **prefer the map-form `N:{agent:"@X", verb:"y"}` encoding** to avoid the Gemini-class tokenizer rewrites. Arrow form remains supported for legacy v0.1 compatibility.
+If building for cross-vendor: use the map-form `N:{agent:"@X", verb:"y"}`. Arrow form still works for v0.1 stuff.
