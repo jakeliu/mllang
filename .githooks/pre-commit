@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# MLLANG public repo — private-content leak guard.
+# Blocks commits that introduce content matching forbidden patterns.
+
+set -e
+
+# Patterns that must NEVER appear in committed content (case-insensitive).
+FORBIDDEN_PATTERNS=(
+  'Token Bot'
+  '_Token Bot'
+  'token-bot'
+  '/Users/jake/Documents/_Token Bot'
+  'KASA_USER'
+  'KASA_PASS'
+  'kasa\.txt'
+  'jliu@askuncleai\.com'
+  '192\.168\.4\.'
+  '127\.0\.0\.1:1234'
+  'mllang-shim'
+)
+
+# Filenames that must NEVER be committed (even if .gitignore is bypassed).
+FORBIDDEN_FILES=(
+  '^examples/ml_.*_harness\.py$'
+  '^examples/ml_harness_base\.py$'
+  '^examples/harness_test_runner\.py$'
+  '^examples/hardware_harness\.py$'
+  '^examples/software_harness\.py$'
+  '^examples/spec_gate\.py$'
+  '^examples/mllang_orchestrator\.py$'
+  '^examples/mllang_sig\.py$'
+  '^examples/.*_round_trip\.py$'
+  '^examples/ai_to_ai_demo\.py$'
+  '^examples/sig_e2e_test\.py$'
+  '^docs/harness_test_brief\.md$'
+  '^PROGRESS\.md$'
+  '^BLOCKED\.md$'
+  '^temp_context-.*\.md$'
+)
+
+# Files that are EXEMPT from the content scan because they document the rules
+# themselves (the guard file lists forbidden patterns as examples).
+GUARD_DOC_FILES=(
+  '.gitignore'
+  '.git/hooks/pre-commit'
+  '.githooks/pre-commit'
+  'CLAUDE.md'
+  'AGENTS.md'
+)
+
+is_guard_doc() {
+  local f="$1"
+  for g in "${GUARD_DOC_FILES[@]}"; do
+    [ "$f" = "$g" ] && return 0
+  done
+  return 1
+}
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+fail=0
+
+# Filename check
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  for pat in "${FORBIDDEN_FILES[@]}"; do
+    if [[ "$f" =~ $pat ]]; then
+      echo "  BLOCK: staged file matches forbidden pattern: $f (rule: $pat)"
+      fail=1
+    fi
+  done
+done <<< "$staged_files"
+
+# Content check on staged diffs (added lines only) — per-file so we can exempt guard docs
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  if is_guard_doc "$f"; then
+    continue
+  fi
+  diff_output=$(git diff --cached --diff-filter=ACM -U0 -- "$f")
+  while IFS= read -r pat; do
+    [ -z "$pat" ] && continue
+    hits=$(echo "$diff_output" | grep -E "^\+" | grep -Ei "$pat" || true)
+    if [ -n "$hits" ]; then
+      echo "  BLOCK: forbidden pattern in $f: $pat"
+      echo "$hits" | head -3 | sed 's/^/    /'
+      fail=1
+    fi
+  done < <(printf '%s\n' "${FORBIDDEN_PATTERNS[@]}")
+done <<< "$staged_files"
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit blocked by MLLANG private-content guard."
+  echo "  If a hit is a false positive, unstage with: git restore --staged <file>"
+  echo "  To bypass (rarely correct): git commit --no-verify"
+  exit 1
+fi
+
+exit 0

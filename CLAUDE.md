@@ -63,7 +63,11 @@ This repo is **public on github.com/jakeliu/mllang**. Token Bot mesh and orchest
 
 Never include these strings in committed content: `Token Bot`, `_Token Bot`, `KASA_USER`, `KASA_PASS`, `kasa.txt`, `jliu@askuncleai.com`, `192.168.4.`, `127.0.0.1:1234`, `mllang-shim`.
 
-A `.git/hooks/pre-commit` guard enforces this. If you hit the block, the right answer is **never** `git commit --no-verify`. Either:
+A `.githooks/pre-commit` guard enforces this. Enable on fresh clone with:
+```
+git config core.hooksPath .githooks
+```
+If you hit the block, the right answer is **never** `git commit --no-verify`. Either:
 1. The file/content should not be in this repo (move to `~/Documents/_Token Bot/`)
 2. The pattern is a false positive (tell the user; do not edit the hook unilaterally)
 
