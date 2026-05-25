@@ -17,3 +17,38 @@ env/
 .vscode/
 *.swp
 *~
+
+# === Private — Token Bot mesh / harnesses / orchestrator — NEVER commit ===
+# ML method harnesses (Token Bot demonstrator mesh)
+examples/ml_*_harness.py
+examples/ml_harness_base.py
+examples/harness_test_runner.py
+examples/hardware_harness.py
+examples/software_harness.py
+examples/spec_gate.py
+examples/_fix_error_codes.py
+
+# Protocol middleware that lives in Token Bot
+examples/mllang_orchestrator.py
+examples/mllang_sig.py
+
+# Cross-vendor demo + sig round-trip scripts (use private keys / endpoints)
+examples/ai_to_ai_demo.py
+examples/sig_e2e_test.py
+examples/gemma_round_trip.py
+examples/*_round_trip.py
+examples/deepseek_*.py
+examples/qwen_*.py
+examples/kimi_*.py
+examples/glm_*.py
+
+# Internal docs not for public
+docs/harness_test_brief.md
+
+# Session artifacts
+PROGRESS.md
+BLOCKED.md
+temp_context-*.md
+
+# Anything below this comment that lives in or references the Token Bot tree
+# should be added explicitly to keep this list curated.

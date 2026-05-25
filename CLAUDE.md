@@ -51,6 +51,24 @@ python3 -m build parser/
 - **Do not touch** Helen book pipeline (`~/Library/Mobile Documents/com~apple~CloudDocs/_Helen book/`).
 - **Do not modify** Chrome companion extension references — that's internal tooling, not open-source.
 
+## Private-content guard (CRITICAL)
+
+This repo is **public on github.com/jakeliu/mllang**. Token Bot mesh and orchestration internals are private. Never commit, suggest committing, or `git add` files matching these patterns:
+
+- `examples/ml_*_harness.py` — ML method harness shims (private demonstrator mesh)
+- `examples/ml_harness_base.py`, `harness_test_runner.py`, `spec_gate.py`, `hardware_harness.py`, `software_harness.py`, `_fix_error_codes.py`
+- `examples/mllang_orchestrator.py`, `examples/mllang_sig.py`, `examples/ai_to_ai_demo.py`, `examples/sig_e2e_test.py`, `examples/*_round_trip.py`
+- `docs/harness_test_brief.md`
+- `PROGRESS.md`, `BLOCKED.md`, `temp_context-*.md`
+
+Never include these strings in committed content: `Token Bot`, `_Token Bot`, `KASA_USER`, `KASA_PASS`, `kasa.txt`, `jliu@askuncleai.com`, `192.168.4.`, `127.0.0.1:1234`, `mllang-shim`.
+
+A `.git/hooks/pre-commit` guard enforces this. If you hit the block, the right answer is **never** `git commit --no-verify`. Either:
+1. The file/content should not be in this repo (move to `~/Documents/_Token Bot/`)
+2. The pattern is a false positive (tell the user; do not edit the hook unilaterally)
+
+Before suggesting `git add <files>` always check the file is not on the private list above, and the diff does not contain a forbidden string. Read `.gitignore` first; if a file is gitignored, do not bypass with `git add -f`.
+
 ## Style
 
 - Default to writing no comments. Only add when the WHY is non-obvious.
