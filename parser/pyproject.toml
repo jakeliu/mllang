@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mllang-protocol"
-version = "0.1.11"
-description = "MLLANG v0.1 reference parser — compact text-surface protocol for AI-agent state, lives inside markdown fenced blocks"
+version = "0.2.0"
+description = "MLLANG v0.2 reference parser — compact text-surface protocol for AI-agent state; v0.2 adds T:cap capability discovery, TR: multi-hop trace, SIG: HMAC, and map-form N: encoding"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
 authors = [

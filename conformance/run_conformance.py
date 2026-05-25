@@ -409,11 +409,33 @@ def main():
     e_pass, e_fail = run_embed_tests()
     print(f"EMBED tests:      {e_pass} passed, {e_fail} failed")
 
-    total_pass = p_pass + h_pass + r_pass + m_pass + s_pass + e_pass
-    total_fail = p_fail + h_fail + r_fail + m_fail + s_fail + e_fail
+    v02_pass, v02_fail = run_v02_tests()
+    print(f"V0.2 CAP tests:   {v02_pass} passed, {v02_fail} failed")
+
+    total_pass = p_pass + h_pass + r_pass + m_pass + s_pass + e_pass + v02_pass
+    total_fail = p_fail + h_fail + r_fail + m_fail + s_fail + e_fail + v02_fail
 
     print(f"\n--- TOTAL: {total_pass} passed, {total_fail} failed ---")
     sys.exit(0 if total_fail == 0 else 1)
+
+
+def run_v02_tests():
+    """Delegate to the v0.2 runner (examples/weather_runner-based)."""
+    runner = Path(__file__).parent / "run_v02_conformance.py"
+    test_file = TESTS_DIR / "cap_20.jsonl"
+    if not runner.exists() or not test_file.exists():
+        return 0, 0
+    import subprocess
+    res = subprocess.run(
+        [sys.executable, str(runner)],
+        capture_output=True, text=True,
+    )
+    last = res.stdout.strip().splitlines()[-1] if res.stdout.strip() else ""
+    import re
+    m = re.search(r"(\d+) passed,\s*(\d+) failed", last)
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    return 0, 1
 
 
 if __name__ == "__main__":

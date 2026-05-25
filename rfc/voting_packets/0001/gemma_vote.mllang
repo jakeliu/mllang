@@ -1,0 +1,1 @@
+V:0.2.r1; I:vote-gemma-001; G:{rfc:"0001"}; N:{agent:"@GEMMA", verb:"rfc.vote"}; H:done; P:0.95; O:{ok:true, vote:approve, comment:"The additions provide necessary structure for capability discovery and error standardization while maintaining backward compatibility with v0.1 parsers."};

@@ -2,8 +2,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/mllang-protocol.svg)](https://pypi.org/project/mllang-protocol/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Spec: v0.1 locked](https://img.shields.io/badge/spec-v0.1_locked-green.svg)](spec/MLLANG_v0.1.locked.md)
-[![Vendors: 9+](https://img.shields.io/badge/vendors-9%2B_ratified-orange.svg)](spec/MLLANG_v0.1.locked.md)
+[![Spec: v0.2 locked](https://img.shields.io/badge/spec-v0.2_locked-green.svg)](spec/MLLANG_v0.2.locked.md)
+[![Vendors: 9+](https://img.shields.io/badge/vendors-9%2B_ratified-orange.svg)](spec/MLLANG_v0.2.locked.md)
 [![CI](https://github.com/jakeliu/mllang/actions/workflows/ci.yml/badge.svg)](https://github.com/jakeliu/mllang/actions/workflows/ci.yml)
 
 > Compact text-surface protocol for AI-agent state. Lives inside markdown fenced blocks. Cross-vendor ratified across 6+ LLM families.
@@ -206,7 +206,8 @@ pip install -e parser/
 
 ## Documentation
 
-- [Specification (v0.1 locked)](spec/MLLANG_v0.1.locked.md)
+- [Specification (v0.2 locked)](spec/MLLANG_v0.2.locked.md) — adds T:cap, TR:, SIG:, map-form N:
+- [Specification (v0.1 locked)](spec/MLLANG_v0.1.locked.md) — base, still valid
 - [Quickstart](docs/quickstart.md)
 - [Markdown-embedded usage](docs/markdown-embedded.md)
 - [Bootstrap — 3-layer setup](docs/bootstrap.md)
@@ -352,9 +353,9 @@ Full slot-by-slot rules and before/after examples: [`docs/telemetry.md`](docs/te
 ## Status
 
 - v0.1 spec: **LOCKED** 2026-05-19
-- v0.2 spec: draft, RFC window open
+- v0.2 spec: **LOCKED** 2026-05-24 (4 of 5 jury approve; RFC 0001 ratified)
 - Parser: pure Python 3, no external deps
-- Conformance: 160-packet test suite (parse / halt / roundtrip / markdown extract / sanitize / embed)
+- Conformance: 166 v0.1 packets + 14 v0.2 packets (T:cap, TR:, SIG:, map-N:) — all green at lock
 - Telemetry: opt-in `sanitize()` with 4 levels + leak-detector defense
 
 ---

@@ -4,6 +4,33 @@ All notable changes to MLLANG.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: MAJOR.MINOR.
 
+## [0.2.0] — 2026-05-24 — v0.2 LOCK
+
+### Added
+- `spec/MLLANG_v0.2.locked.md` — v0.2 spec frozen. Strict superset of v0.1.
+- `T:cap` packet type discriminator + structured `CAP:{agent_id, family, algorithm, verbs[{name, required, optional, side_effects}], runtime, state}` capability payload.
+- `TR:{root, parent, depth}` multi-hop trace slot. Preserved across responses across chain hops.
+- `SIG:<hex>` HMAC-SHA256 packet signature. Stdlib `hmac` + `hashlib` is sufficient to implement. Env-var key (`MLLANG_SIG_KEY`) recommended. Opt-in.
+- `N:{agent:"@X", verb:"y"}` map-form encoding (Gemini-safe). Backward compatible with `N:@X -> y` arrow form.
+- Canonical `ERR_*` registry locked into spec (33 codes incl. new `ERR_AUTH_FAIL`).
+- Canonical `family` enum (26 families).
+- v0.2 conformance suite at `conformance/tests/cap_20.jsonl` (14 cases) + `conformance/run_v02_conformance.py`.
+
+### Cross-vendor validation (RFC 0001 voting + round-trip)
+- Anthropic (Claude Opus 4.7) ✓
+- OpenAI (Codex gpt-5.5) ✓ — vote + follow-up clf.predict round-trip
+- Google (Gemini 2.5 Pro) ✓ — map-form N: encoding required to bypass tokenizer quirk
+- Open-weight (Gemma 4-e4b, gemma-4-26b-a4b-it via local LM Studio) ✓
+- Vote tally: 4 approve / 0 reject / 1 pending → threshold met (3 of 5)
+
+### Why
+The 25-harness mesh + bridge tests surfaced two real problems: capability discovery was ad-hoc, and error codes drifted (14 distinct codes for 7 concepts). v0.2 standardizes both without breaking v0.1 parsers, and adds the minimum primitives (trace + sig) that cross-vendor mesh routing actually needs.
+
+### Backward compatibility
+v0.1 parsers ignore unknown slots — every v0.2 packet remains readable as v0.1 minus the new slot semantics.
+
+---
+
 ## [0.1.11] — 2026-05-20
 
 ### Added — real desktop push notification on `mailbox_send`

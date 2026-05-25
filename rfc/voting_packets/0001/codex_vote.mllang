@@ -1,0 +1,1 @@
+V:0.2.r1; I:vote-codex-001; G:{rfc:"0001", change_1:"T:cap shape", change_2:"canonical_err_codes"}; N:@CODEX -> rfc.vote; H:done; P:0.95; O:{ok:true, vote:approve, comment:"Approve because the additions are backward-compatible, already implemented in harnesses, and supported by complete corpus conformance for canonical errors."};

@@ -1,0 +1,1 @@
+V:0.2.r1; I:gemini-rt-1; G:{text:"WIN free money click now urgent"}; N:{agent:" @ML_CLF", verb:"clf.predict"}; H:done; P:0.9; TR:{root:"gemini-rt", parent:"gemini-rt", depth:1, comment:"Classified as malicious spam"};

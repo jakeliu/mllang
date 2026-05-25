@@ -1,0 +1,1 @@
+V:0.2.r1; I:gemma-rt-1; G:{text:"WIN free money click now urgent"}; N:{agent:"@ML_CLF", verb:"clf.predict"}; H:done; P:0.9; TR:{root:"gemma-rt", parent:"gemma-rt", depth:1, comment:"spam_detection"};
